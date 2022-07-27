@@ -76,15 +76,6 @@ def handle_menu(update: Update, context, user):
         return handle_questionnaire(update, context, user)
     elif query.data == 'respond_to_questions':
         return respond_to_questions(update, context, user)
-    
-
-    context.bot.send_message(
-        chat_id=update.effective_chat.id,
-        text='handle_menu',
-    )
-    return user, 'START'
-
-
 
 
 def get_program(update: Update, context, user):
