@@ -61,12 +61,52 @@ def start(update: Update, context, user):
 def handle_menu(update: Update, context, user):
     query = update.callback_query
     query.answer()
-    context.bot.send_message(
-        chat_id=update.effective_chat.id,
-        text='handle_menu',
-    )
+
     context.bot.delete_message(
         chat_id=update.effective_chat.id,
         message_id=query.message.message_id
     )
+    if query.data == 'program':
+        return get_program(update, context, user)
+    elif query.data == 'donate':
+        return handle_donation(update, context, user)
+    elif query.data == 'ask_speaker':
+        return ask_speaker(update, context, user)
+    elif query.data == 'acquaint':
+        return handle_questionnaire(update, context, user)
+    elif query.data == 'respond_to_questions':
+        return respond_to_questions(update, context, user)
+    
+
+    context.bot.send_message(
+        chat_id=update.effective_chat.id,
+        text='handle_menu',
+    )
+    return user, 'START'
+
+
+
+
+def get_program(update: Update, context, user):
+    # TODO functionality
+    return user, 'START'
+
+
+def handle_donation(update: Update, context, user):
+    # TODO functionality
+    return user, 'START'
+
+
+def ask_speaker(update: Update, context, user):
+    # TODO functionality
+    return user, 'START'
+
+
+def handle_questionnaire(update: Update, context, user):
+    # TODO functionality
+    return user, 'START'
+
+
+def respond_to_questions(update: Update, context, user):
+    # TODO functionality
     return user, 'START'
