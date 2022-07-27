@@ -11,6 +11,7 @@ SECRET_KEY = env.str('DJANGO_SECRET_KEY')
 DEBUG = env.bool('DEBUG', True)
 ALLOWED_HOSTS = env.list('ALLOWED_HOSTS', ['127.0.0.1', 'localhost'])
 TELEGRAM_ACCESS_TOKEN = env.str('TELEGRAM_ACCESS_TOKEN')
+TG_MERCHANT_TOKEN = env.str('TG_MERCHANT_TOKEN')
 
 INSTALLED_APPS = [
     'django.contrib.admin',

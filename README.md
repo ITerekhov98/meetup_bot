@@ -4,8 +4,9 @@
 ## Установка 
 
 Качаем репозиторий, в папке *meetup* создаём `.env` файл. Минимальный конфиг для запуска:
-- DJANGO_SECRET_KEY
-- TELEGRAM_ACCESS_TOKEN
+- `DJANGO_SECRET_KEY`
+- `TELEGRAM_ACCESS_TOKEN` — Токен Телеграм-бота
+- `TG_MERCHANT_TOKEN` — токен платежной системы в Telegram
 
 Устанавливаем зависимости:
 ```

@@ -1,3 +1,4 @@
+from telegram import Update, InlineKeyboardMarkup, InlineKeyboardButton, LabeledPrice
 from telegram import Update, InlineKeyboardMarkup, InlineKeyboardButton
 from telegram.ext import (
     CallbackQueryHandler,
@@ -6,8 +7,10 @@ from telegram.ext import (
     MessageHandler,
     Updater,
     Filters,
-    CallbackContext
-    )
+    CallbackContext, PreCheckoutQueryHandler
+)
+
+from django.conf import settings
 
 from .models import Client, Questionnaire
 from .tg_bot_lib import get_menu_keyboard, get_accept_questionnarie_keyboard, check_email
@@ -28,6 +31,8 @@ class TgChatBot(object):
         self.updater.dispatcher.add_handler(CallbackQueryHandler(self.handle_users_reply))
         self.updater.dispatcher.add_handler(CommandHandler('start', self.handle_users_reply))
         self.updater.dispatcher.add_handler(MessageHandler(Filters.text, self.handle_users_reply))
+        self.updater.dispatcher.add_handler(PreCheckoutQueryHandler(precheckout_callback))
+        self.updater.dispatcher.add_handler(MessageHandler(Filters.successful_payment, successful_payment_callback))
 
     def handle_users_reply(self, update: Update, context: CallbackContext):
         user, created = Client.objects.get_or_create(
@@ -118,8 +123,43 @@ def get_program(update: Update, context: CallbackContext):
 
 
 def handle_donation(update: Update, context: CallbackContext):
-    # TODO functionality
+    chat_id = update.effective_chat.id
+    title = 'Задонатить'
+    description = 'Организаторам на печеньки 🍪'
+    payload = 'UserDonate'
+    provider_token = settings.TG_MERCHANT_TOKEN
+    start_parameter = 'test-payment'
+    currency = 'RUB'
+    sum_in_rub = 200
+    prices = [LabeledPrice('Донат организаторам', sum_in_rub * 100)]
+
+    context.bot.send_invoice(chat_id, title, description, payload,
+                             provider_token, start_parameter, currency, prices)
     return 'START'
+
+
+def precheckout_callback(update, context):
+    query = update.pre_checkout_query
+    if query.invoice_payload != 'UserDonate':
+        context.bot.answer_pre_checkout_query(
+            pre_checkout_query_id=query.id,
+            ok=False,
+            error_message='Что-то пошло не так и не туда...'
+        )
+    else:
+        context.bot.answer_pre_checkout_query(
+            pre_checkout_query_id=query.id,
+            ok=True
+        )
+
+
+def successful_payment_callback(update, context):
+    reply_markup = InlineKeyboardMarkup([[InlineKeyboardButton(RETURN_BUTTON_TEXT, callback_data='return')]])
+
+    update.message.reply_text(
+        text='Спасибо за донат!',
+        reply_markup=reply_markup
+    )
 
 
 def ask_speaker(update: Update, context: CallbackContext):
@@ -139,7 +179,7 @@ def handle_questionnaire(update: Update, context: CallbackContext):
             is_valid_email = check_email(update, context)
             if not is_valid_email:
                 return 'HANDLE_QUESTIONNAIRE'
-        context.user_data[previous_question] = update.message.text 
+        context.user_data[previous_question] = update.message.text
 
     if question_index < len(questions_for_questionnaire):
         question = readable_questions[questions_for_questionnaire[question_index]]
@@ -147,7 +187,7 @@ def handle_questionnaire(update: Update, context: CallbackContext):
         if question_index == 0:
             with open('meetup_bot/questionnaire_intro.txt', 'r') as f:
                 intro = f.read()
-            question = f'{intro}\r\n\r\n{question}'     
+            question = f'{intro}\r\n\r\n{question}'
         context.bot.send_message(
             chat_id=update.effective_chat.id,
             text=question,
@@ -179,7 +219,7 @@ def accept_questionnarie_renewal(update, context):
             return start(update, context)
         elif query.data == 'accept':
             return handle_questionnaire(update, context)
-    
+
     reply_markup = get_accept_questionnarie_keyboard()
     text = 'Вы уже заполняли анкету. Хотите изменить данные?'
     context.bot.send_message(
