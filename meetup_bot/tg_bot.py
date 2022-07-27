@@ -29,7 +29,15 @@ class TgChatBot(object):
         )
         if created:
             user.current_state = 'START'
-            user.event.add(self.event)
+        user.event = self.event
+
+        if update.message:
+            user_reply = update.message.text
+        elif update.callback_query:
+            user_reply = update.callback_query.data
+
+        if user_reply == '/start':
+            user.current_state = 'START'
 
         state_handler = self.states_functions[user.current_state]
         user, next_state = state_handler(update, context, user)
@@ -42,4 +50,4 @@ def start(update: Update, context, user):
         chat_id=update.effective_chat.id,
         text='Привет! Здесь будет чат-бот',
     )
-    return user, 'END'
+    return user, 'START'

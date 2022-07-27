@@ -1,7 +1,7 @@
 from django.conf import settings
 from django.core.management import BaseCommand
 
-from meetup_bot.tg_bot import TgChatBot, start, end
+from meetup_bot.tg_bot import TgChatBot, start
 from meetup_bot.models import Event
 
 
