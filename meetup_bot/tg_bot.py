@@ -1,5 +1,5 @@
+from email_validate import validate
 from telegram import Update
-
 from telegram.ext import (
     CallbackQueryHandler,
     CommandHandler,
@@ -11,7 +11,7 @@ from telegram.ext import (
     )
 
 from .models import Client, Questionnaire
-from .tg_bot_lib import get_menu_keyboard, get_accept_questionnarie_keyboard
+from .tg_bot_lib import get_menu_keyboard, get_accept_questionnarie_keyboard, check_email
 
 
 class TgChatBot(object):
@@ -108,13 +108,18 @@ def handle_questionnaire(update: Update, context: CallbackContext):
     questions_for_questionnaire = context.bot_data['questions_for_questionnaire']
     readable_questions = context.bot_data['readable_questions']
 
+    if question_index != 0:
+        previous_question = questions_for_questionnaire[question_index-1]
+        if previous_question == 'email':
+            is_valid_email = check_email(update, context)
+            if not is_valid_email:
+                return 'HANDLE_QUESTIONNAIRE'
+        context.user_data[previous_question] = update.message.text 
+
     if question_index < len(questions_for_questionnaire):
         question = readable_questions[questions_for_questionnaire[question_index]]
         context.user_data['current_question'] = question_index + 1
-        if question_index != 0:
-            previous_question = questions_for_questionnaire[question_index-1]
-            context.user_data[previous_question] = update.message.text       
-        else:
+        if question_index == 0:
             with open('meetup_bot/questionnaire_intro.txt', 'r') as f:
                 intro = f.read()
             question = f'{intro}\r\n\r\n{question}'     
@@ -123,10 +128,6 @@ def handle_questionnaire(update: Update, context: CallbackContext):
             text=question,
         )
         return 'HANDLE_QUESTIONNAIRE'
-
-    user_reply = update.message.text
-    previous_question = questions_for_questionnaire[question_index-1]
-    context.user_data[previous_question] = user_reply
 
 
     Questionnaire.objects.update_or_create(
