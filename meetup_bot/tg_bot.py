@@ -15,10 +15,11 @@ from .tg_bot_lib import get_menu_keyboard
 
 class TgChatBot(object):
 
-    def __init__(self, token, event, states_functions):
+    def __init__(self, token, event, states_functions, questions_for_questionnaire):
         self.event = event
         self.token = token 
         self.states_functions = states_functions
+        self.questions_for_questionnaire = questions_for_questionnaire
         self.updater = Updater(token=token)
         self.updater.dispatcher.add_handler(CallbackQueryHandler(self.handle_users_reply))
         self.updater.dispatcher.add_handler(CommandHandler('start', self.handle_users_reply))
@@ -41,12 +42,12 @@ class TgChatBot(object):
             user.current_state = 'START'
 
         state_handler = self.states_functions[user.current_state]
-        user, next_state = state_handler(update, context, user)
+        user, next_state = state_handler(update, context, user, self)
         user.current_state = next_state
         user.save()
 
 
-def start(update: Update, context, user):
+def start(update: Update, context, user, bot_details):
     greeting = '/МЕСТО ДЛЯ ПРИВЕТСТВИЯ/'
     reply_markup = get_menu_keyboard(user.is_speaker)
 
@@ -58,7 +59,7 @@ def start(update: Update, context, user):
     return user, 'HANDLE_MENU'
 
 
-def handle_menu(update: Update, context, user):
+def handle_menu(update: Update, context, user, bot_details):
     query = update.callback_query
     query.answer()
 
@@ -67,37 +68,37 @@ def handle_menu(update: Update, context, user):
         message_id=query.message.message_id
     )
     if query.data == 'program':
-        return get_program(update, context, user)
+        return get_program(update, context, user, bot_details)
     elif query.data == 'donate':
-        return handle_donation(update, context, user)
+        return handle_donation(update, context, user, bot_details)
     elif query.data == 'ask_speaker':
-        return ask_speaker(update, context, user)
+        return ask_speaker(update, context, user, bot_details)
     elif query.data == 'acquaint':
-        return handle_questionnaire(update, context, user)
+        return handle_questionnaire(update, context, user, bot_details)
     elif query.data == 'respond_to_questions':
-        return respond_to_questions(update, context, user)
+        return respond_to_questions(update, context, user, bot_details)
 
 
-def get_program(update: Update, context, user):
+def get_program(update: Update, context, user, bot_details):
     # TODO functionality
     return user, 'START'
 
 
-def handle_donation(update: Update, context, user):
+def handle_donation(update: Update, context, user, bot_details):
     # TODO functionality
     return user, 'START'
 
 
-def ask_speaker(update: Update, context, user):
+def ask_speaker(update: Update, context, user, bot_details):
     # TODO functionality
     return user, 'START'
 
 
-def handle_questionnaire(update: Update, context, user):
-    # TODO functionality
+def handle_questionnaire(update: Update, context, user, bot_details):
+
     return user, 'START'
 
 
-def respond_to_questions(update: Update, context, user):
+def respond_to_questions(update: Update, context, user, bot_details):
     # TODO functionality
     return user, 'START'
