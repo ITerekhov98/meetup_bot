@@ -1,7 +1,7 @@
+import os
 from pathlib import Path
 
 from environs import Env
-
 
 env = Env()
 env.read_env()
@@ -9,7 +9,7 @@ env.read_env()
 BASE_DIR = Path(__file__).resolve().parent.parent
 SECRET_KEY = env.str('DJANGO_SECRET_KEY')
 DEBUG = env.bool('DEBUG', True)
-ALLOWED_HOSTS = env.list('ALLOWED_HOSTS', ['127.0.0.1','localhost'])
+ALLOWED_HOSTS = env.list('ALLOWED_HOSTS', ['127.0.0.1', 'localhost'])
 TELEGRAM_ACCESS_TOKEN = env.str('TELEGRAM_ACCESS_TOKEN')
 
 INSTALLED_APPS = [
@@ -52,7 +52,6 @@ TEMPLATES = [
 
 WSGI_APPLICATION = 'meetup.wsgi.application'
 
-
 # Database
 # https://docs.djangoproject.com/en/4.0/ref/settings/#databases
 
@@ -62,7 +61,6 @@ DATABASES = {
         'NAME': BASE_DIR / 'db.sqlite3',
     }
 }
-
 
 # Password validation
 # https://docs.djangoproject.com/en/4.0/ref/settings/#auth-password-validators
@@ -82,7 +80,6 @@ AUTH_PASSWORD_VALIDATORS = [
     },
 ]
 
-
 # Internationalization
 # https://docs.djangoproject.com/en/4.0/topics/i18n/
 
@@ -94,11 +91,12 @@ USE_I18N = True
 
 USE_TZ = True
 
-
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/4.0/howto/static-files/
 
 STATIC_URL = 'static/'
+MEDIA_URL = env.str('MEDIA_URL', default='media/')
+MEDIA_ROOT = os.path.join(BASE_DIR, 'media/')
 
 # Default primary key field type
 # https://docs.djangoproject.com/en/4.0/ref/settings/#default-auto-field
