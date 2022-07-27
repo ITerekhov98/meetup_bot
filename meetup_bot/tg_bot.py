@@ -11,7 +11,7 @@ from telegram.ext import (
     )
 
 from .models import Client, Questionnaire
-from .tg_bot_lib import get_menu_keyboard
+from .tg_bot_lib import get_menu_keyboard, get_accept_questionnarie_keyboard
 
 
 class TgChatBot(object):
@@ -80,6 +80,8 @@ def handle_menu(update: Update, context: CallbackContext):
         return ask_speaker(update, context)
     elif query.data == 'acquaint':
         context.user_data['current_question'] = 0
+        if Questionnaire.objects.filter(client=context.user_data['user']).exists():
+            return accept_questionnarie_renewal(update, context)
         return handle_questionnaire(update, context)
     elif query.data == 'respond_to_questions':
         return respond_to_questions(update, context)
@@ -125,18 +127,42 @@ def handle_questionnaire(update: Update, context: CallbackContext):
     user_reply = update.message.text
     previous_question = questions_for_questionnaire[question_index-1]
     context.user_data[previous_question] = user_reply
-    Questionnaire.objects.create(
+
+
+    Questionnaire.objects.update_or_create(
         client=user,
-        first_name=context.user_data['first_name'],
-        email = context.user_data['email'],
-        job_title = context.user_data['job_title'],
-        company = context.user_data['company']
+        defaults= {
+            'first_name': context.user_data['first_name'],
+            'email': context.user_data['email'],
+            'job_title': context.user_data['job_title'],
+            'company': context.user_data['company']
+        }
     )
     context.bot.send_message(
         chat_id=update.effective_chat.id,
         text='Спасибо что прошли опрос',
     )
     return 'START'
+
+
+def accept_questionnarie_renewal(update, context):
+    if update.callback_query:
+        query = update.callback_query
+        query.answer()
+        if query.data == 'back_to_menu':
+            return start(update, context)
+        elif query.data == 'accept':
+            return handle_questionnaire(update, context)
+    
+    reply_markup = get_accept_questionnarie_keyboard()
+    text = 'Вы уже заполняли анкету. Хотите изменить данные?'
+    context.bot.send_message(
+        chat_id=update.effective_chat.id,
+        text=text,
+        reply_markup=reply_markup
+    )
+    return 'ACCEPT_QUESTIONNARIE_RENEWAL'
+
 
 
 def respond_to_questions(update: Update, context: CallbackContext):
