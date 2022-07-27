@@ -2,7 +2,6 @@ from telegram import Update
 
 from telegram.ext import (
     CallbackQueryHandler,
-    PollAnswerHandler,
     CommandHandler,
     Filters,
     MessageHandler,
@@ -11,6 +10,7 @@ from telegram.ext import (
     )
 
 from .models import Client
+from .tg_bot_lib import get_menu_keyboard
 
 
 class TgChatBot(object):
@@ -20,6 +20,7 @@ class TgChatBot(object):
         self.token = token 
         self.states_functions = states_functions
         self.updater = Updater(token=token)
+        self.updater.dispatcher.add_handler(CallbackQueryHandler(self.handle_users_reply))
         self.updater.dispatcher.add_handler(CommandHandler('start', self.handle_users_reply))
         self.updater.dispatcher.add_handler(MessageHandler(Filters.text, self.handle_users_reply))
 
@@ -46,8 +47,26 @@ class TgChatBot(object):
 
 
 def start(update: Update, context, user):
+    greeting = '/МЕСТО ДЛЯ ПРИВЕТСТВИЯ/'
+    reply_markup = get_menu_keyboard(user.is_speaker)
+
     context.bot.send_message(
         chat_id=update.effective_chat.id,
-        text='Привет! Здесь будет чат-бот',
+        text=greeting,
+        reply_markup=reply_markup
+    )
+    return user, 'HANDLE_MENU'
+
+
+def handle_menu(update: Update, context, user):
+    query = update.callback_query
+    query.answer()
+    context.bot.send_message(
+        chat_id=update.effective_chat.id,
+        text='handle_menu',
+    )
+    context.bot.delete_message(
+        chat_id=update.effective_chat.id,
+        message_id=query.message.message_id
     )
     return user, 'START'
