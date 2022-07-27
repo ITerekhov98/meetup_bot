@@ -9,9 +9,13 @@ from telegram.ext import (
     Updater,
     )
 
+from .models import Client
+
+
 class TgChatBot(object):
 
-    def __init__(self, token):
+    def __init__(self, token, event):
+        self.event = event
         self.token = token 
         self.updater = Updater(token=token)
         self.updater.dispatcher.add_handler(CommandHandler('start', start))
