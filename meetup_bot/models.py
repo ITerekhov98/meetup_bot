@@ -8,7 +8,7 @@ def get_upload_lecture_path(instance, filename):
 
 
 def get_upload_event_path(instance, filename):
-    return Path(instance.event.title) / filename
+    return Path(instance.title) / filename
 
 
 class Event(models.Model):
@@ -34,7 +34,30 @@ class Event(models.Model):
     def __str__(self):
         return f'Мероприятие {self.title}'
 
-        
+
+class Block(models.Model):
+    """Блок"""
+    title = models.CharField(
+        verbose_name='Заголовок',
+        max_length=300,
+        unique=True
+    )
+    start = models.DateTimeField(verbose_name='Начало мероприятия')
+    end = models.DateTimeField(verbose_name='Конец мероприятия')
+    event = models.ForeignKey(
+        Event,
+        on_delete=models.CASCADE,
+        verbose_name='Мероприятие',
+        related_name='blocks'
+    )
+
+    class Meta:
+        ordering = ["-end"]
+
+    def __str__(self):
+        return f'Блок {self.title}'
+
+
 class Client(models.Model):
     """Пользователь"""
     tg_id = models.PositiveIntegerField(
@@ -43,6 +66,7 @@ class Client(models.Model):
     )
     is_speaker = models.BooleanField(
         default=False,
+        verbose_name='Является спикером?',
         blank=True
     )
     event = models.ForeignKey(
@@ -134,10 +158,10 @@ class Lecture(models.Model):
         default=False,
         blank=True
     )
-    event = models.ForeignKey(
-        Event,
+    block = models.ForeignKey(
+        Block,
         on_delete=models.CASCADE,
-        verbose_name='Мероприятие',
+        verbose_name='Блок',
         related_name='lectures'
     )
     speaker = models.ForeignKey(
@@ -150,6 +174,16 @@ class Lecture(models.Model):
     )
     start = models.DateTimeField(verbose_name='Начало доклада')
     end = models.DateTimeField(verbose_name='Конец доклада')
+
+    def save(self, *args, **kwargs):
+        if self.speaker:
+            user = self.speaker
+            user.is_speaker = True
+            user.save()
+        return super(Lecture, self).save(*args, **kwargs)
+
+    class Meta:
+        ordering = ["end"]
 
     def __str__(self):
         return f'{"Доклад" if not self.is_timeout else ""} {self.title}'
@@ -164,11 +198,11 @@ class Donate(models.Model):
         verbose_name='Пользователь',
         related_name='donates'
     )
-    event = models.OneToOneField(
+    event = models.ForeignKey(
         Event,
         on_delete=models.CASCADE,
         verbose_name='Мероприятие',
-        primary_key=True
+        related_name='donates'
     )
 
     def __str__(self):
