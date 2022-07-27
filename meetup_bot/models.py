@@ -11,6 +11,30 @@ def get_upload_event_path(instance, filename):
     return Path(instance.event.title) / filename
 
 
+class Event(models.Model):
+    """Мероприятие"""
+    title = models.CharField(
+        verbose_name='Заголовок',
+        max_length=300,
+        unique=True
+    )
+    image = models.ImageField(
+        verbose_name='Фотография',
+        upload_to=get_upload_event_path,
+        blank=True,
+        null=True
+    )
+    description = models.TextField(verbose_name='Описание', blank=True)
+    start = models.DateField(verbose_name='Начало мероприятия')
+    end = models.DateField(verbose_name='Конец мероприятия')
+
+    class Meta:
+        ordering = ["-end"]
+
+    def __str__(self):
+        return f'Мероприятие {self.title}'
+
+        
 class Client(models.Model):
     """Пользователь"""
     tg_id = models.PositiveIntegerField(
@@ -22,10 +46,11 @@ class Client(models.Model):
         blank=True
     )
     event = models.ForeignKey(
-        'Event',
+        Event,
         on_delete=models.SET_NULL,
         verbose_name='Мероприятие',
-        related_name='clients'
+        related_name='clients',
+        null=True
     )
     current_state = models.CharField(
         'Состояние диалога',
@@ -78,42 +103,16 @@ class Question(models.Model):
         on_delete=models.CASCADE,
         verbose_name='От кого вопрос',
         related_name='outcoming_questions',
-        primary_key=True
     )
     to_user = models.ForeignKey(
         Client,
         on_delete=models.CASCADE,
         verbose_name='Кому вопрос',
         related_name='incoming_questions',
-        primary_key=True
     )
 
     def __str__(self):
         return f'Вопрос для tg_id={self.question_to.tg_id} от tg_id={self.question_from.tg_id}'
-
-
-class Event(models.Model):
-    """Мероприятие"""
-    title = models.CharField(
-        verbose_name='Заголовок',
-        max_length=300,
-        unique=True
-    )
-    image = models.ImageField(
-        verbose_name='Фотография',
-        upload_to=get_upload_event_path,
-        blank=True,
-        null=True
-    )
-    description = models.TextField(verbose_name='Описание', blank=True)
-    start = models.DateField(verbose_name='Начало мероприятия')
-    end = models.DateField(verbose_name='Конец мероприятия')
-
-    class Meta:
-        ordering = ["-end"]
-
-    def __str__(self):
-        return f'Мероприятие {self.title}'
 
 
 class Lecture(models.Model):
