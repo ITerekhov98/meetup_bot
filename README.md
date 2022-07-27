@@ -12,6 +12,11 @@
 pip install -r requirements.txt
 ```
 
+Формируем БД:
+```
+python manage.py migrate
+```
+
 ## Запуск
 ```
 python manage.py start_bot
