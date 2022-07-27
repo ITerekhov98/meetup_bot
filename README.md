@@ -17,6 +17,19 @@ pip install -r requirements.txt
 python manage.py migrate
 ```
 
+Для запуска бота понадится хотя бы одно сохранённое в БД мероприятие. Для теста можно заполнить след образом:
+```
+python manage.py shell
+```
+Далее в консоли django:
+```
+from meetup_bot.models import Event
+Event.objects.create(title='Мероприятие 1', start='2022-01-01', end='2023-01-01')
+exit()
+```
+
+
+
 ## Запуск
 ```
 python manage.py start_bot
