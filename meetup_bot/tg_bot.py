@@ -6,10 +6,11 @@ from telegram.ext import (
     Filters,
     MessageHandler,
     Updater,
-    Filters
+    Filters,
+    CallbackContext
     )
 
-from .models import Client
+from .models import Client, Questionnaire
 from .tg_bot_lib import get_menu_keyboard
 
 
@@ -20,12 +21,12 @@ class TgChatBot(object):
         self.token = token 
         self.states_functions = states_functions
         self.questions_for_questionnaire = questions_for_questionnaire
-        self.updater = Updater(token=token)
+        self.updater = Updater(token=token, use_context=True)
         self.updater.dispatcher.add_handler(CallbackQueryHandler(self.handle_users_reply))
         self.updater.dispatcher.add_handler(CommandHandler('start', self.handle_users_reply))
         self.updater.dispatcher.add_handler(MessageHandler(Filters.text, self.handle_users_reply))
 
-    def handle_users_reply(self, update: Update, context):
+    def handle_users_reply(self, update: Update, context: CallbackContext):
         user, created = Client.objects.get_or_create(
             tg_id=update.effective_chat.id,
         )
@@ -47,7 +48,7 @@ class TgChatBot(object):
         user.save()
 
 
-def start(update: Update, context, user, bot_details):
+def start(update: Update, context: CallbackContext, user, bot_details):
     greeting = '/МЕСТО ДЛЯ ПРИВЕТСТВИЯ/'
     reply_markup = get_menu_keyboard(user.is_speaker)
 
@@ -59,7 +60,7 @@ def start(update: Update, context, user, bot_details):
     return user, 'HANDLE_MENU'
 
 
-def handle_menu(update: Update, context, user, bot_details):
+def handle_menu(update: Update, context: CallbackContext, user, bot_details):
     query = update.callback_query
     query.answer()
 
@@ -74,31 +75,59 @@ def handle_menu(update: Update, context, user, bot_details):
     elif query.data == 'ask_speaker':
         return ask_speaker(update, context, user, bot_details)
     elif query.data == 'acquaint':
+        context.user_data['current_question'] = 0
         return handle_questionnaire(update, context, user, bot_details)
     elif query.data == 'respond_to_questions':
         return respond_to_questions(update, context, user, bot_details)
 
 
-def get_program(update: Update, context, user, bot_details):
+def get_program(update: Update, context: CallbackContext, user, bot_details):
     # TODO functionality
     return user, 'START'
 
 
-def handle_donation(update: Update, context, user, bot_details):
+def handle_donation(update: Update, context: CallbackContext, user, bot_details):
     # TODO functionality
     return user, 'START'
 
 
-def ask_speaker(update: Update, context, user, bot_details):
+def ask_speaker(update: Update, context: CallbackContext, user, bot_details):
     # TODO functionality
     return user, 'START'
 
 
-def handle_questionnaire(update: Update, context, user, bot_details):
+def handle_questionnaire(update: Update, context: CallbackContext, user, bot_details):
+    question_index = context.user_data.get('current_question')
 
+    if question_index < len(bot_details.questions_for_questionnaire):
+        question = bot_details.questions_for_questionnaire[question_index]
+        context.user_data['current_question'] = question_index + 1
+        if question_index != 0:
+            previous_question = bot_details.questions_for_questionnaire[question_index-1]
+            context.user_data[previous_question] = update.message.text
+        context.bot.send_message(
+            chat_id=update.effective_chat.id,
+            text=question,
+        )
+        return user, 'HANDLE_QUESTIONNAIRE'
+
+    user_reply = update.message.text
+    previous_question = bot_details.questions_for_questionnaire[question_index-1]
+    context.user_data[previous_question] = user_reply
+    Questionnaire.objects.create(
+        client=user,
+        first_name=context.user_data['first_name'],
+        email = context.user_data['email'],
+        job_title = context.user_data['job_title'],
+        company = context.user_data['company']
+    )
+    context.bot.send_message(
+        chat_id=update.effective_chat.id,
+        text='thank you!',
+    )
     return user, 'START'
 
 
-def respond_to_questions(update: Update, context, user, bot_details):
+def respond_to_questions(update: Update, context: CallbackContext, user, bot_details):
     # TODO functionality
     return user, 'START'

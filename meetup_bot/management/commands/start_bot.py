@@ -1,7 +1,7 @@
 from django.conf import settings
 from django.core.management import BaseCommand
 
-from meetup_bot.tg_bot import TgChatBot, handle_menu, start
+from meetup_bot.tg_bot import TgChatBot, handle_menu, handle_questionnaire, start
 from meetup_bot.models import Event, Questionnaire
 
 
@@ -21,7 +21,8 @@ def start_bot():
         current_event,
         {
             'START': start,
-            'HANDLE_MENU': handle_menu
+            'HANDLE_MENU': handle_menu,
+            'HANDLE_QUESTIONNAIRE': handle_questionnaire
         },
         questions_for_questionnaire
     )
