@@ -17,6 +17,7 @@ from .tg_bot_lib import get_menu_keyboard, get_accept_questionnarie_keyboard, ch
 
 
 RETURN_BUTTON_TEXT = '↩ Назад'
+GREETING_MSG = 'Здравствуйте! Это официальный бот по поддержке участников 🤖'
 
 
 class TgChatBot(object):
@@ -60,7 +61,7 @@ class TgChatBot(object):
 
 
 def start(update: Update, context: CallbackContext):
-    greeting = '/МЕСТО ДЛЯ ПРИВЕТСТВИЯ/'
+    greeting = GREETING_MSG
     reply_markup = get_menu_keyboard(context.user_data['user'].is_speaker)
 
     query = update.callback_query

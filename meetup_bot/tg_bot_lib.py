@@ -3,10 +3,10 @@ from email_validate import validate
 
 def get_menu_keyboard(is_speaker):
     keyboard = [
-        [InlineKeyboardButton('Программа', callback_data='program')],
-        [InlineKeyboardButton('Задонатить', callback_data='donate')],
-        [InlineKeyboardButton('Задать вопрос спикеру', callback_data='ask_speaker')],
-        [InlineKeyboardButton('Познакомиться', callback_data='acquaint')],
+        [InlineKeyboardButton('📋  Программа мероприятия', callback_data='program')],
+        [InlineKeyboardButton('🗣  Задать вопрос спикеру', callback_data='ask_speaker')],
+        [InlineKeyboardButton('🤝  Познакомиться', callback_data='acquaint')],
+        [InlineKeyboardButton('💸  Донат', callback_data='donate')],
     ]
     if is_speaker:
         keyboard.append(
