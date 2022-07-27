@@ -1,4 +1,4 @@
-from telegram import Update
+from telegram import Update, InlineKeyboardMarkup, InlineKeyboardButton
 
 from telegram.ext import (
     CallbackQueryHandler,
@@ -12,6 +12,9 @@ from telegram.ext import (
 
 from .models import Client, Questionnaire
 from .tg_bot_lib import get_menu_keyboard
+
+
+RETURN_BUTTON_TEXT = '↩ Назад'
 
 
 class TgChatBot(object):
@@ -54,6 +57,13 @@ def start(update: Update, context: CallbackContext):
     greeting = '/МЕСТО ДЛЯ ПРИВЕТСТВИЯ/'
     reply_markup = get_menu_keyboard(context.user_data['user'].is_speaker)
 
+    query = update.callback_query
+    if query:
+        context.bot.delete_message(
+            chat_id=update.effective_chat.id,
+            message_id=query.message.message_id
+        )
+
     context.bot.send_message(
         chat_id=update.effective_chat.id,
         text=greeting,
@@ -84,7 +94,23 @@ def handle_menu(update: Update, context: CallbackContext):
 
 
 def get_program(update: Update, context: CallbackContext):
-    # TODO functionality
+    # TODO подгрузить текст программы из бд
+    program_text = "ПРОГРАММА МЕРОПРИЯТИЯ\n\n" \
+                   "09:00-10:00 - Регистрация\n" \
+                   "10:00-11:30 - Дискуссия\n" \
+                   "11:30-12:00 - Нетворкинг\n\n" \
+                   "перерыв\n\n" \
+                   "12:30-13:30 - Блок  «Коммуникационные инновации»\n" \
+                   "13:30-15:00 - Блок  «Автоматизация рекламных коммуникаций»\n" \
+                   "15:00-16:00 - Блок  «Построение аналитики»\n"
+
+    reply_markup = InlineKeyboardMarkup([[InlineKeyboardButton(RETURN_BUTTON_TEXT, callback_data='return')]])
+
+    context.bot.send_message(
+        chat_id=update.effective_chat.id,
+        text=program_text,
+        reply_markup=reply_markup
+    )
     return 'START'
 
 
