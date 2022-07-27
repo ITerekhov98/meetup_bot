@@ -16,6 +16,12 @@ def start_bot():
     questions_for_questionnaire = [
         field.name for field in Questionnaire._meta.get_fields()[1:]
     ]
+    readable_questions = {
+        'first_name': 'Как вас зовут?',
+        'email': 'Напишите ваш email',
+        'job_title': 'Кем вы работаете?',
+        'company': 'В какой компании?',
+    }
     bot = TgChatBot(
         settings.TELEGRAM_ACCESS_TOKEN,
         current_event,
@@ -24,7 +30,8 @@ def start_bot():
             'HANDLE_MENU': handle_menu,
             'HANDLE_QUESTIONNAIRE': handle_questionnaire
         },
-        questions_for_questionnaire
+        questions_for_questionnaire,
+        readable_questions
     )
     bot.updater.start_polling()
     bot.updater.idle()

@@ -16,11 +16,12 @@ from .tg_bot_lib import get_menu_keyboard
 
 class TgChatBot(object):
 
-    def __init__(self, token, event, states_functions, questions_for_questionnaire):
+    def __init__(self, token, event, states_functions, questions_for_questionnaire, readable_questions):
         self.event = event
         self.token = token 
         self.states_functions = states_functions
         self.questions_for_questionnaire = questions_for_questionnaire
+        self.readable_questions = readable_questions
         self.updater = Updater(token=token, use_context=True)
         self.updater.dispatcher.add_handler(CallbackQueryHandler(self.handle_users_reply))
         self.updater.dispatcher.add_handler(CommandHandler('start', self.handle_users_reply))
@@ -44,6 +45,7 @@ class TgChatBot(object):
 
         context.user_data['user'] = user
         context.bot_data['questions_for_questionnaire'] = self.questions_for_questionnaire
+        context.bot_data['readable_questions'] = self.readable_questions
         state_handler = self.states_functions[user.current_state]
         next_state = state_handler(update, context)
         context.user_data['user'].current_state = next_state
@@ -102,13 +104,18 @@ def handle_questionnaire(update: Update, context: CallbackContext):
     question_index = context.user_data.get('current_question')
     user = context.user_data['user']
     questions_for_questionnaire = context.bot_data['questions_for_questionnaire']
+    readable_questions = context.bot_data['readable_questions']
 
     if question_index < len(questions_for_questionnaire):
-        question = questions_for_questionnaire[question_index]
+        question = readable_questions[questions_for_questionnaire[question_index]]
         context.user_data['current_question'] = question_index + 1
         if question_index != 0:
             previous_question = questions_for_questionnaire[question_index-1]
-            context.user_data[previous_question] = update.message.text
+            context.user_data[previous_question] = update.message.text       
+        else:
+            with open('meetup_bot/questionnaire_intro.txt', 'r') as f:
+                intro = f.read()
+            question = f'{intro}\r\n\r\n{question}'     
         context.bot.send_message(
             chat_id=update.effective_chat.id,
             text=question,
@@ -127,7 +134,7 @@ def handle_questionnaire(update: Update, context: CallbackContext):
     )
     context.bot.send_message(
         chat_id=update.effective_chat.id,
-        text='thank you!',
+        text='Спасибо что прошли опрос',
     )
     return 'START'
 
