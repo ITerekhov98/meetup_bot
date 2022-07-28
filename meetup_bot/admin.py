@@ -37,7 +37,7 @@ class ClientAdmin(admin.ModelAdmin):
     readonly_fields = ["current_state"]
     list_filter = ("event",)
     search_fields = ["tg_id", ]
-    fields = ("tg_id", "is_speaker", "event",)
+    fields = ("tg_id", "is_speaker", "event", "first_name", "job_title")
 
 
 @admin.register(Lecture)
