@@ -108,7 +108,7 @@ def handle_menu(update: Update, context: CallbackContext):
 
 
 def get_program_blocks(update: Update, context: CallbackContext):
-    event = Event.objects.first()
+    event = context.user_data['user'].event
     # TODO get current event, load blocks only for the event
     event_blocks = Block.objects.all()
 
@@ -176,9 +176,14 @@ def handle_program_lectures(update: Update, context: CallbackContext):
     time_from = current_lecture.start.strftime('%H:%M')
     time_to = current_lecture.end.strftime('%H:%M')
 
+    if current_lecture.speaker:
+        speaker_data = f'Спикер: {current_lecture.speaker.first_name}, {current_lecture.speaker.job_title}'
+    else:
+        speaker_data = ''
+
     msg_text = f'Доклад: {current_lecture.title}\n\n' \
                f'С {time_from} до {time_to}\n\n' \
-               f'Спикер: {current_lecture.speaker}\n' \
+               f'{speaker_data}\n' \
                f'{current_lecture.description}'
 
     reply_markup = InlineKeyboardMarkup(
