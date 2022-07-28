@@ -1,5 +1,11 @@
+from datetime import datetime
+from django.utils import timezone
+
 from telegram import InlineKeyboardButton, InlineKeyboardMarkup
 from email_validate import validate
+
+from .models import Block, Lecture
+
 
 def get_menu_keyboard(is_speaker):
     keyboard = [
@@ -38,3 +44,32 @@ def check_email(update, context):
             text='Не могу распознать введённый email. Попробуйте ещё раз',
         )
     return is_valid_email
+
+def get_blocks_keyboard():
+    blocks = Block.objects.filter(end__gte=timezone.now())
+    keyboard = [
+        [InlineKeyboardButton(block.title, callback_data=f'block {block.pk}')] for block in blocks
+    ]
+    keyboard.append(
+        [InlineKeyboardButton('Назад в меню', callback_data='back_to_menu')]
+    )
+    reply_markup = InlineKeyboardMarkup(keyboard)
+    return reply_markup
+
+def get_lectures_keyboard(block_pk):
+    lectures = Lecture.objects.filter(block__pk=block_pk).filter(end__gte=timezone.now())
+    keyboard = [
+        [InlineKeyboardButton(lecture.title, callback_data=f'lecture {lecture.pk}')] for lecture in lectures
+    ]
+    keyboard.append(
+        [InlineKeyboardButton('Назад в меню', callback_data='back_to_menu')]
+    )
+    reply_markup = InlineKeyboardMarkup(keyboard)
+    return reply_markup
+
+def waiting_ask_keyboard():
+    keyboard = [
+        [InlineKeyboardButton('Назад в меню', callback_data='back_to_menu')]
+    ]
+    reply_markup = InlineKeyboardMarkup(keyboard)
+    return reply_markup

@@ -1,7 +1,7 @@
 from django.conf import settings
 from django.core.management import BaseCommand
 
-from meetup_bot.tg_bot import TgChatBot, accept_questionnarie_renewal, \
+from meetup_bot.tg_bot import TgChatBot, accept_questionnarie_renewal, ask_speaker, \
     handle_menu, handle_questionnaire, start
 from meetup_bot.models import Event, Questionnaire
 
@@ -30,7 +30,8 @@ def start_bot():
             'START': start,
             'HANDLE_MENU': handle_menu,
             'HANDLE_QUESTIONNAIRE': handle_questionnaire,
-            'ACCEPT_QUESTIONNARIE_RENEWAL': accept_questionnarie_renewal
+            'ACCEPT_QUESTIONNARIE_RENEWAL': accept_questionnarie_renewal,
+            'HANDLE_ASKING_SPEAKER': ask_speaker
         },
         questions_for_questionnaire,
         readable_questions
