@@ -3,7 +3,7 @@ from django.core.management import BaseCommand
 
 from meetup_bot.tg_bot import TgChatBot, accept_questionnarie_renewal, ask_speaker, \
     handle_menu, handle_questionnaire, start, respond_to_questions, \
-    handle_program_blocks, handle_program_lectures
+    handle_program_blocks, handle_program_lectures, handle_donation
 from meetup_bot.models import Event, Questionnaire
 
 
@@ -36,6 +36,7 @@ def start_bot():
             'HANDLE_RESPOND': respond_to_questions,
             'HANDLE_PROGRAM_BLOCKS': handle_program_blocks,
             'HANDLE_PROGRAM_LECTURES': handle_program_lectures,
+            'HANDLE_DONATION': handle_donation
         },
         questions_for_questionnaire,
         readable_questions

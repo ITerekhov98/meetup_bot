@@ -95,6 +95,7 @@ def handle_menu(update: Update, context: CallbackContext):
     if query.data == 'program':
         return get_program_blocks(update, context)
     elif query.data == 'donate':
+        return ask_donation_sum(update, context)
         return handle_donation(update, context)
     elif query.data == 'ask_speaker':
         return ask_speaker(update, context)
@@ -208,8 +209,25 @@ def handle_program_lectures(update: Update, context: CallbackContext):
     return 'START'
 
 
+def ask_donation_sum(update: Update, context: CallbackContext):
+    reply_markup = InlineKeyboardMarkup(
+        [[InlineKeyboardButton(RETURN_BUTTON_TEXT, callback_data='return')]]
+    )
+    context.bot.send_message(
+        chat_id=update.effective_chat.id,
+        text='Введите сумму доната в рублях числом (не менее 60)',
+        reply_markup=reply_markup
+    )
+    return 'HANDLE_DONATION'
+
 
 def handle_donation(update: Update, context: CallbackContext):
+    query = update.callback_query
+    if query and query.data == 'return':
+        return start(update, context)
+
+    users_sum = int(update.message.text)
+
     chat_id = update.effective_chat.id
     title = 'Задонатить'
     description = 'Организаторам на печеньки 🍪'
@@ -217,11 +235,13 @@ def handle_donation(update: Update, context: CallbackContext):
     provider_token = settings.TG_MERCHANT_TOKEN
     start_parameter = 'test-payment'
     currency = 'RUB'
-
-    # TODO custom sum
-    sum_in_rub = 200
+    sum_in_rub = users_sum
     prices = [LabeledPrice('Донат организаторам', sum_in_rub * 100)]
 
+    context.bot.delete_message(
+        chat_id=update.effective_chat.id,
+        message_id=update.message.message_id
+    )
     context.bot.send_invoice(chat_id, title, description, payload,
                              provider_token, start_parameter, currency, prices)
     return 'START'
