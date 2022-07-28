@@ -21,7 +21,7 @@ from .tg_bot_lib import \
     waiting_ask_keyboard, get_next_question
 
 
-RETURN_BUTTON_TEXT = '↩ Назад'
+RETURN_BUTTON_TEXT = '↩ Назад в меню'
 GREETING_MSG = 'Здравствуйте! Это официальный бот по поддержке участников 🤖'
 
 
@@ -142,7 +142,8 @@ def handle_program_blocks(update: Update, context: CallbackContext):
 
     keyboard = []
     if query.data == 'return':
-        return 'START'
+        return start(update, context)
+
     current_block = Block.objects.get(id=query.data)
     for lecture in current_block.lectures.all():
         keyboard.append([InlineKeyboardButton(lecture.title, callback_data=lecture.id)])
@@ -170,14 +171,19 @@ def handle_program_lectures(update: Update, context: CallbackContext):
     query.answer()
 
     if query.data == 'return':
-        return 'START'
+        return start(update, context)
+
     current_lecture = Lecture.objects.get(id=query.data)
 
     time_from = current_lecture.start.strftime('%H:%M')
     time_to = current_lecture.end.strftime('%H:%M')
 
-    if current_lecture.speaker:
-        speaker_data = f'Спикер: {current_lecture.speaker.first_name}, {current_lecture.speaker.job_title}'
+    lecture_speakers = current_lecture.speakers.all()
+
+    if lecture_speakers:
+        speaker_data = 'Спикер(ы):\n'
+        for speaker in lecture_speakers:
+            speaker_data += f'{speaker.first_name}, {speaker.job_title}\n'
     else:
         speaker_data = ''
 
@@ -211,6 +217,8 @@ def handle_donation(update: Update, context: CallbackContext):
     provider_token = settings.TG_MERCHANT_TOKEN
     start_parameter = 'test-payment'
     currency = 'RUB'
+
+    # TODO custom sum
     sum_in_rub = 200
     prices = [LabeledPrice('Донат организаторам', sum_in_rub * 100)]
 
