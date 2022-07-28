@@ -101,8 +101,7 @@ class Questionnaire(models.Model):
     email = models.EmailField(
         verbose_name='Почта',
         max_length=70,
-        blank=True,
-        unique=True
+        blank=True
     )
     job_title = models.CharField(
         verbose_name='Должность',
@@ -207,3 +206,16 @@ class Donate(models.Model):
 
     def __str__(self):
         return f'Донат от tg_id={self.client.tg_id}'
+
+
+class Notification(models.Model):
+    """Отправить уведомление"""
+    title = models.CharField(
+        verbose_name='Заголовок',
+        max_length=300,
+        blank=True,
+    )
+    message = models.TextField(verbose_name='Описание')
+
+    def __str__(self):
+        return f'Уведомление {self.id} - {self.title if self.title else ""}'

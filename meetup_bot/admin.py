@@ -1,6 +1,10 @@
+import requests
+from django.conf import settings
 from django.contrib import admin
+from django.http import HttpResponseRedirect
+from requests.exceptions import HTTPError, ConnectionError
 
-from .models import Event, Client, Lecture, Donate, Block
+from .models import Event, Client, Lecture, Donate, Block, Notification
 
 
 class LectureInline(admin.TabularInline):
@@ -47,3 +51,29 @@ class LectureAdmin(admin.ModelAdmin):
 class DonateAdmin(admin.ModelAdmin):
     list_filter = ("event",)
 
+
+@admin.register(Notification)
+class NotificationAdmin(admin.ModelAdmin):
+    search_fields = ["title", ]
+
+    change_form_template = "admin/model_notification.html"
+
+    def response_change(self, request, obj):
+        if "_send-notification" in request.POST:
+            token = settings.TELEGRAM_ACCESS_TOKEN
+            clients = Client.objects.all()
+            for client in clients:
+                chat_id = client.tg_id
+                url = f"https://api.telegram.org/bot{token}/sendMessage?chat_id={chat_id}&text={obj.message}"
+                try:
+                    response = requests.get(url)
+                    response.raise_for_status()
+                except HTTPError:
+                    # логируем ошибку
+                    pass
+                except ConnectionError:
+                    # логируем ошибку
+                    pass
+            self.message_user(request, "Уведомление отправлено")
+            return HttpResponseRedirect(".")
+        return super().response_change(request, obj)
