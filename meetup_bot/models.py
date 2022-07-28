@@ -30,6 +30,8 @@ class Event(models.Model):
 
     class Meta:
         ordering = ["-end"]
+        verbose_name = "Мероприятие"
+        verbose_name_plural = "Мероприятия"
 
     def __str__(self):
         return f'Мероприятие {self.title}'
@@ -52,7 +54,9 @@ class Block(models.Model):
     )
 
     class Meta:
-        ordering = ["-end"]
+        ordering = ["end"]
+        verbose_name = "Блок"
+        verbose_name_plural = "Блоки"
 
     def __str__(self):
         return f'Блок {self.title}'
@@ -91,8 +95,12 @@ class Client(models.Model):
         max_length=20
     )
 
+    class Meta:
+        verbose_name = "Пользователь"
+        verbose_name_plural = "Пользователи"
+
     def __str__(self):
-        return f'Пользователь tg_id={self.tg_id}'
+        return f'Пользователь {self.id} - {self.first_name if self.first_name else self.tg_id}'
 
 
 class Questionnaire(models.Model):
@@ -124,6 +132,10 @@ class Questionnaire(models.Model):
         blank=True
     )
 
+    class Meta:
+        verbose_name = "Анкета"
+        verbose_name_plural = "Анкеты"
+
     def __str__(self):
         return f'Анкета клиента с tg_id={self.client.tg_id}'
 
@@ -144,12 +156,16 @@ class Question(models.Model):
         related_name='incoming_questions',
     )
 
+    class Meta:
+        verbose_name = "Вопрос спикеру"
+        verbose_name_plural = "Вопросы спикеру"
+
     def __str__(self):
         return f'Вопрос для tg_id={self.question_to.tg_id} от tg_id={self.question_from.tg_id}'
 
 
 class Lecture(models.Model):
-    """Доклад"""
+    """Лекция"""
     title = models.CharField(
         verbose_name='Заголовок',
         max_length=300,
@@ -190,9 +206,11 @@ class Lecture(models.Model):
 
     class Meta:
         ordering = ["end"]
+        verbose_name = "Лекция"
+        verbose_name_plural = "Лекции"
 
     def __str__(self):
-        return f'{"Доклад" if not self.is_timeout else ""} {self.title}'
+        return f'{"Лекция" if not self.is_timeout else ""} {self.title}'
 
 
 class Donate(models.Model):
@@ -211,6 +229,10 @@ class Donate(models.Model):
         related_name='donates'
     )
 
+    class Meta:
+        verbose_name = "Донат"
+        verbose_name_plural = "Донаты"
+
     def __str__(self):
         return f'Донат от tg_id={self.client.tg_id}'
 
@@ -223,6 +245,10 @@ class Notification(models.Model):
         blank=True,
     )
     message = models.TextField(verbose_name='Описание')
+
+    class Meta:
+        verbose_name = "Уведомление"
+        verbose_name_plural = "Уведомления"
 
     def __str__(self):
         return f'Уведомление {self.id} - {self.title if self.title else ""}'
