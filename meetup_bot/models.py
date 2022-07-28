@@ -69,6 +69,16 @@ class Client(models.Model):
         verbose_name='Является спикером?',
         blank=True
     )
+    first_name = models.CharField(
+        verbose_name='Имя',
+        max_length=30,
+        blank=True
+    )
+    job_title = models.CharField(
+        verbose_name='Должность',
+        max_length=50,
+        blank=True
+    )
     event = models.ForeignKey(
         Event,
         on_delete=models.SET_NULL,
