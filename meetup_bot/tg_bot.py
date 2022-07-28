@@ -1,3 +1,5 @@
+from datetime import datetime
+
 from telegram import Update, InlineKeyboardMarkup, InlineKeyboardButton, LabeledPrice
 from telegram import Update, InlineKeyboardMarkup, InlineKeyboardButton
 from telegram.ext import (
@@ -12,7 +14,7 @@ from telegram.ext import (
 
 from django.conf import settings
 
-from .models import Client, Questionnaire, Question
+from .models import Client, Questionnaire, Question, Block, Lecture, Event
 from .tg_bot_lib import \
     get_menu_keyboard, get_accept_questionnarie_keyboard, \
     check_email, get_blocks_keyboard, get_lectures_keyboard, \
@@ -91,7 +93,7 @@ def handle_menu(update: Update, context: CallbackContext):
         message_id=query.message.message_id
     )
     if query.data == 'program':
-        return get_program(update, context)
+        return get_program_blocks(update, context)
     elif query.data == 'donate':
         return handle_donation(update, context)
     elif query.data == 'ask_speaker':
@@ -105,25 +107,95 @@ def handle_menu(update: Update, context: CallbackContext):
         return respond_to_questions(update, context)
 
 
-def get_program(update: Update, context: CallbackContext):
-    # TODO подгрузить текст программы из бд
-    program_text = "ПРОГРАММА МЕРОПРИЯТИЯ\n\n" \
-                   "09:00-10:00 - Регистрация\n" \
-                   "10:00-11:30 - Дискуссия\n" \
-                   "11:30-12:00 - Нетворкинг\n\n" \
-                   "перерыв\n\n" \
-                   "12:30-13:30 - Блок  «Коммуникационные инновации»\n" \
-                   "13:30-15:00 - Блок  «Автоматизация рекламных коммуникаций»\n" \
-                   "15:00-16:00 - Блок  «Построение аналитики»\n"
+def get_program_blocks(update: Update, context: CallbackContext):
+    event = Event.objects.first()
+    # TODO get current event, load blocks only for the event
+    event_blocks = Block.objects.all()
 
-    reply_markup = InlineKeyboardMarkup([[InlineKeyboardButton(RETURN_BUTTON_TEXT, callback_data='return')]])
+    event_from = event.start.strftime('%d.%m %Yг.')
+    event_to = event.end.strftime('%d.%m %Yг.')
+    event_dates = event_from if event_from == event_to else f'{event_from} - {event_to}'
+    program_text = f'ПРОГРАММА МЕРОПРИЯТИЯ\n' \
+                   f'«{event.title}»\n\n' \
+                   f'{event_dates}\n\n' \
+                   f'{event.description}'
+    keyboard = []
+    for block in event_blocks:
+        keyboard.append([InlineKeyboardButton(block.title, callback_data=block.id)])
 
+    keyboard.append(
+        [InlineKeyboardButton(RETURN_BUTTON_TEXT, callback_data='return')]
+    )
+
+    reply_markup = InlineKeyboardMarkup(keyboard)
     context.bot.send_message(
         chat_id=update.effective_chat.id,
         text=program_text,
         reply_markup=reply_markup
     )
+    return 'HANDLE_PROGRAM_BLOCKS'
+
+
+def handle_program_blocks(update: Update, context: CallbackContext):
+    query = update.callback_query
+    query.answer()
+
+    keyboard = []
+    if query.data == 'return':
+        return 'START'
+    current_block = Block.objects.get(id=query.data)
+    for lecture in current_block.lectures.all():
+        keyboard.append([InlineKeyboardButton(lecture.title, callback_data=lecture.id)])
+
+    keyboard.append(
+        [InlineKeyboardButton(RETURN_BUTTON_TEXT, callback_data='return')]
+    )
+
+    reply_markup = InlineKeyboardMarkup(keyboard)
+
+    context.bot.delete_message(
+        chat_id=update.effective_chat.id,
+        message_id=query.message.message_id
+    )
+    context.bot.send_message(
+        chat_id=update.effective_chat.id,
+        text=f'Доклады блока: {current_block.title}',
+        reply_markup=reply_markup
+    )
+    return 'HANDLE_PROGRAM_LECTURES'
+
+
+def handle_program_lectures(update: Update, context: CallbackContext):
+    query = update.callback_query
+    query.answer()
+
+    if query.data == 'return':
+        return 'START'
+    current_lecture = Lecture.objects.get(id=query.data)
+
+    time_from = current_lecture.start.strftime('%H:%M')
+    time_to = current_lecture.end.strftime('%H:%M')
+
+    msg_text = f'Доклад: {current_lecture.title}\n\n' \
+               f'С {time_from} до {time_to}\n\n' \
+               f'Спикер: {current_lecture.speaker}\n' \
+               f'{current_lecture.description}'
+
+    reply_markup = InlineKeyboardMarkup(
+        [[InlineKeyboardButton(RETURN_BUTTON_TEXT, callback_data='return')]]
+    )
+
+    context.bot.delete_message(
+        chat_id=update.effective_chat.id,
+        message_id=query.message.message_id
+    )
+    context.bot.send_message(
+        chat_id=update.effective_chat.id,
+        text=msg_text,
+        reply_markup=reply_markup
+    )
     return 'START'
+
 
 
 def handle_donation(update: Update, context: CallbackContext):

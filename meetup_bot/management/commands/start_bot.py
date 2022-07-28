@@ -2,7 +2,8 @@ from django.conf import settings
 from django.core.management import BaseCommand
 
 from meetup_bot.tg_bot import TgChatBot, accept_questionnarie_renewal, ask_speaker, \
-    handle_menu, handle_questionnaire, start, respond_to_questions
+    handle_menu, handle_questionnaire, start, respond_to_questions, \
+    handle_program_blocks, handle_program_lectures
 from meetup_bot.models import Event, Questionnaire
 
 
@@ -32,7 +33,9 @@ def start_bot():
             'HANDLE_QUESTIONNAIRE': handle_questionnaire,
             'ACCEPT_QUESTIONNARIE_RENEWAL': accept_questionnarie_renewal,
             'HANDLE_ASKING_SPEAKER': ask_speaker,
-            'HANDLE_RESPOND': respond_to_questions
+            'HANDLE_RESPOND': respond_to_questions,
+            'HANDLE_PROGRAM_BLOCKS': handle_program_blocks,
+            'HANDLE_PROGRAM_LECTURES': handle_program_lectures,
         },
         questions_for_questionnaire,
         readable_questions
