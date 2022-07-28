@@ -13,7 +13,10 @@ from telegram.ext import (
 from django.conf import settings
 
 from .models import Client, Questionnaire, Question
-from .tg_bot_lib import get_menu_keyboard, get_accept_questionnarie_keyboard, check_email, get_blocks_keyboard, get_lectures_keyboard, waiting_ask_keyboard
+from .tg_bot_lib import \
+    get_menu_keyboard, get_accept_questionnarie_keyboard, \
+    check_email, get_blocks_keyboard, get_lectures_keyboard, \
+    waiting_ask_keyboard, get_next_question
 
 
 RETURN_BUTTON_TEXT = '↩ Назад'
@@ -269,5 +272,35 @@ def accept_questionnarie_renewal(update, context):
 
 
 def respond_to_questions(update: Update, context: CallbackContext):
-    # TODO functionality
-    return 'START'
+    if update.callback_query:
+        query = update.callback_query
+        query.answer()
+        if query.data == 'back_to_menu':
+            return start(update, context)
+
+    respond_index = context.user_data.get('current_respond', 0)
+    user = context.user_data['user']
+    if respond_index == 0:
+        questions = [ question.question for question in user.incoming_questions.all()]
+        context.user_data['questions'] = questions
+    else:
+        questions = context.user_data['questions']
+    
+    if respond_index == len(questions):
+        check_for_new_questions = user.incoming_questions.all()
+        if check_for_new_questions.count() == len(questions):
+            context.bot.send_message(
+                chat_id=update.effective_chat.id,
+                text='Вопросов больше нет!'
+            )
+            return 'START'
+        questions = [question.question for question in check_for_new_questions]
+        context.user_data['questions'] = questions
+
+    context.bot.send_message(
+        chat_id=update.effective_chat.id,
+        text=questions[respond_index],
+        reply_markup=get_next_question()
+    )    
+    context.user_data['current_respond'] = respond_index+1
+    return 'HANDLE_RESPOND'

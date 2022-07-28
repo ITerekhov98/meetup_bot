@@ -73,3 +73,11 @@ def waiting_ask_keyboard():
     ]
     reply_markup = InlineKeyboardMarkup(keyboard)
     return reply_markup
+
+def get_next_question():
+    keyboard = [
+        [InlineKeyboardButton('Следующий вопрос', callback_data='next')],
+        [InlineKeyboardButton('Назад в меню', callback_data='back_to_menu')],
+    ]
+    reply_markup = InlineKeyboardMarkup(keyboard)
+    return reply_markup
