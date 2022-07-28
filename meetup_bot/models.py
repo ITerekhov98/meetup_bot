@@ -172,13 +172,11 @@ class Lecture(models.Model):
         verbose_name='Блок',
         related_name='lectures'
     )
-    speaker = models.ForeignKey(
+    speakers = models.ManyToManyField(
         Client,
-        on_delete=models.CASCADE,
-        verbose_name='Спикер',
+        verbose_name='Спикеры',
         related_name='lectures',
         blank=True,
-        null=True
     )
     start = models.DateTimeField(verbose_name='Начало доклада')
     end = models.DateTimeField(verbose_name='Конец доклада')

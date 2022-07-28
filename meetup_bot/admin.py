@@ -9,8 +9,8 @@ from .models import Event, Client, Lecture, Donate, Block, Notification
 
 class LectureInline(admin.TabularInline):
     model = Lecture
-    raw_id_fields = ("speaker",)
-    fields = ("title", "is_timeout", "speaker", "start", "end",)
+    raw_id_fields = ("speakers",)
+    fields = ("title", "is_timeout", "speakers", "start", "end",)
     extra = 0
 
 
@@ -44,7 +44,7 @@ class ClientAdmin(admin.ModelAdmin):
 class LectureAdmin(admin.ModelAdmin):
     search_fields = ["title", ]
     list_filter = ("block",)
-    raw_id_fields = ("speaker",)
+    raw_id_fields = ("speakers",)
 
 
 @admin.register(Donate)
