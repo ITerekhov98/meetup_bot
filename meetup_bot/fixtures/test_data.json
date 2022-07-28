@@ -1,0 +1,257 @@
+[
+  {
+    "model": "meetup_bot.event",
+    "pk": 1,
+    "fields": {
+      "title": "Сервисы и инструменты автоматизации",
+      "image": "",
+      "description": "",
+      "start": "2022-09-01",
+      "end": "2022-09-01"
+    }
+  },
+  {
+    "model": "meetup_bot.block",
+    "pk": 1,
+    "fields": {
+      "title": "Вступительные мероприятия",
+      "start": "2022-09-01T07:00:00Z",
+      "end": "2022-09-01T09:00:00Z",
+      "event": 1
+    }
+  },
+  {
+    "model": "meetup_bot.block",
+    "pk": 2,
+    "fields": {
+      "title": "Поток \"Эверест\"",
+      "start": "2022-09-01T09:00:00Z",
+      "end": "2022-09-01T13:40:00Z",
+      "event": 1
+    }
+  },
+  {
+    "model": "meetup_bot.block",
+    "pk": 3,
+    "fields": {
+      "title": "Поток \"Альпы\"",
+      "start": "2022-09-01T09:00:00Z",
+      "end": "2022-09-01T13:40:00Z",
+      "event": 1
+    }
+  },
+  {
+    "model": "meetup_bot.block",
+    "pk": 4,
+    "fields": {
+      "title": "Заключительные мероприятия",
+      "start": "2022-09-01T13:40:00Z",
+      "end": "2022-09-01T15:00:00Z",
+      "event": 1
+    }
+  },
+  {
+    "model": "meetup_bot.lecture",
+    "pk": 1,
+    "fields": {
+      "title": "Регистрация",
+      "description": "",
+      "image": "",
+      "is_timeout": true,
+      "block": 1,
+      "speaker": null,
+      "start": "2022-09-01T06:00:00Z",
+      "end": "2022-09-01T07:00:00Z"
+    }
+  },
+  {
+    "model": "meetup_bot.lecture",
+    "pk": 2,
+    "fields": {
+      "title": "Дискуссия – пути развития рынка разработки",
+      "description": "",
+      "image": "",
+      "is_timeout": false,
+      "block": 1,
+      "speaker": null,
+      "start": "2022-09-01T07:00:00Z",
+      "end": "2022-09-01T08:30:00Z"
+    }
+  },
+  {
+    "model": "meetup_bot.lecture",
+    "pk": 3,
+    "fields": {
+      "title": "Перерыв, Нетворкинг, участие в зоне эксмпо",
+      "description": "Перерыв, Нетворкинг, участие в зоне эксмпо",
+      "image": "",
+      "is_timeout": false,
+      "block": 1,
+      "speaker": null,
+      "start": "2022-09-01T08:30:00Z",
+      "end": "2022-09-01T09:00:00Z"
+    }
+  },
+  {
+    "model": "meetup_bot.lecture",
+    "pk": 4,
+    "fields": {
+      "title": "Коммуникационные инновации",
+      "description": "",
+      "image": "",
+      "is_timeout": false,
+      "block": 2,
+      "speaker": null,
+      "start": "2022-09-01T09:00:00Z",
+      "end": "2022-09-01T10:30:00Z"
+    }
+  },
+  {
+    "model": "meetup_bot.lecture",
+    "pk": 5,
+    "fields": {
+      "title": "Обед",
+      "description": "",
+      "image": "",
+      "is_timeout": true,
+      "block": 2,
+      "speaker": null,
+      "start": "2022-09-01T10:30:00Z",
+      "end": "2022-09-01T11:00:00Z"
+    }
+  },
+  {
+    "model": "meetup_bot.lecture",
+    "pk": 6,
+    "fields": {
+      "title": "Построение предективной аналитики",
+      "description": "",
+      "image": "",
+      "is_timeout": false,
+      "block": 2,
+      "speaker": null,
+      "start": "2022-09-01T11:00:00Z",
+      "end": "2022-09-01T11:50:00Z"
+    }
+  },
+  {
+    "model": "meetup_bot.lecture",
+    "pk": 7,
+    "fields": {
+      "title": "Автоматизация рекламных коммуникаций",
+      "description": "",
+      "image": "",
+      "is_timeout": false,
+      "block": 2,
+      "speaker": null,
+      "start": "2022-09-01T11:50:00Z",
+      "end": "2022-09-01T12:40:00Z"
+    }
+  },
+  {
+    "model": "meetup_bot.lecture",
+    "pk": 8,
+    "fields": {
+      "title": "Системы управления коммуникациями компании с клиентами",
+      "description": "",
+      "image": "",
+      "is_timeout": false,
+      "block": 2,
+      "speaker": null,
+      "start": "2022-09-01T12:40:00Z",
+      "end": "2022-09-01T13:30:00Z"
+    }
+  },
+  {
+    "model": "meetup_bot.lecture",
+    "pk": 9,
+    "fields": {
+      "title": "Автоматизация продаж",
+      "description": "",
+      "image": "",
+      "is_timeout": false,
+      "block": 3,
+      "speaker": null,
+      "start": "2022-09-01T09:00:00Z",
+      "end": "2022-09-01T10:30:00Z"
+    }
+  },
+  {
+    "model": "meetup_bot.lecture",
+    "pk": 10,
+    "fields": {
+      "title": "Нетворкин",
+      "description": "",
+      "image": "",
+      "is_timeout": true,
+      "block": 3,
+      "speaker": null,
+      "start": "2022-09-01T10:30:00Z",
+      "end": "2022-09-01T11:00:00Z"
+    }
+  },
+  {
+    "model": "meetup_bot.lecture",
+    "pk": 11,
+    "fields": {
+      "title": "Построение предективной аналитики",
+      "description": "",
+      "image": "",
+      "is_timeout": false,
+      "block": 3,
+      "speaker": null,
+      "start": "2022-09-01T11:00:00Z",
+      "end": "2022-09-01T11:30:00Z"
+    }
+  },
+  {
+    "model": "meetup_bot.lecture",
+    "pk": 12,
+    "fields": {
+      "title": "Автоматизация рекламных коммуникаций",
+      "description": "",
+      "image": "",
+      "is_timeout": false,
+      "block": 3,
+      "speaker": null,
+      "start": "2022-09-01T12:20:00Z",
+      "end": "2022-09-01T13:40:00Z"
+    }
+  },
+  {
+    "model": "meetup_bot.lecture",
+    "pk": 13,
+    "fields": {
+      "title": "Нетворкинг",
+      "description": "",
+      "image": "",
+      "is_timeout": true,
+      "block": 4,
+      "speaker": null,
+      "start": "2022-09-01T13:30:00Z",
+      "end": "2022-09-01T14:00:00Z"
+    }
+  },
+  {
+    "model": "meetup_bot.lecture",
+    "pk": 14,
+    "fields": {
+      "title": "Премия \"BMW 2020\"",
+      "description": "",
+      "image": "",
+      "is_timeout": false,
+      "block": 4,
+      "speaker": null,
+      "start": "2022-09-01T14:00:00Z",
+      "end": "2022-09-01T15:00:00Z"
+    }
+  },
+  {
+    "model": "meetup_bot.notification",
+    "pk": 1,
+    "fields": {
+      "title": "Приветствие",
+      "message": "Добро пожаловать на наше мероприятие \"Программирование\""
+    }
+  }
+]

@@ -143,7 +143,6 @@ class Lecture(models.Model):
     title = models.CharField(
         verbose_name='Заголовок',
         max_length=300,
-        unique=True
     )
     description = models.TextField(verbose_name='Описание', blank=True)
     image = models.ImageField(
