@@ -34,3 +34,9 @@ exit()
 ```
 python manage.py start_bot
 ```
+
+## Загрузка тестовых данных
+После создания бд прописать в консоли команду:
+```
+python manage.py loaddata test_data.json
+```
