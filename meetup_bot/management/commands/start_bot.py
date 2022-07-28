@@ -1,7 +1,8 @@
 from django.conf import settings
 from django.core.management import BaseCommand
 
-from meetup_bot.tg_bot import TgChatBot, accept_questionnarie_renewal, handle_menu, handle_questionnaire, start
+from meetup_bot.tg_bot import TgChatBot, accept_questionnarie_renewal, \
+    handle_menu, handle_questionnaire, start
 from meetup_bot.models import Event, Questionnaire
 
 
