@@ -169,6 +169,11 @@ def successful_payment_callback(update, context):
 def ask_speaker(update: Update, context: CallbackContext):
     if update.message:
         speaker = Client.objects.get(lectures__pk=context.user_data['lecture_pk'])
+        if not speaker.incoming_questions.exists():
+            context.bot.send_message(
+                chat_id=speaker.tg_id,
+                text='Вам поступили вопросы по докладу! Не забудьте ответить',
+            )
         Question.objects.create(
             question=update.message.text,
             from_user=context.user_data['user'],
