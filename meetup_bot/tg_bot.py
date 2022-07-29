@@ -403,7 +403,7 @@ def handle_acquaintance(update, context: Context):
 
     elif 'get_contact' in query.data:
         tg_id = query.data.split()[-1]
-        text = f'[Приятного общения!](tg://user?id={tg_id})'
+        text = f'[Приятного общения\!](tg://user?id={tg_id})'
         reply_markup=back_to_menu_keyboard()
         context.bot.send_message(
             chat_id=update.effective_chat.id,
