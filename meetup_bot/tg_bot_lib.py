@@ -77,7 +77,8 @@ def waiting_ask_keyboard():
     reply_markup = InlineKeyboardMarkup(keyboard)
     return reply_markup
 
-def get_next_question():
+
+def get_questions_keyboard():
     keyboard = [
         [InlineKeyboardButton('Ответить в чат', callback_data='reply')],
         [InlineKeyboardButton('Следующий вопрос', callback_data='next')],
@@ -86,6 +87,7 @@ def get_next_question():
     ]
     reply_markup = InlineKeyboardMarkup(keyboard)
     return reply_markup
+
 
 def get_speakers_keyboard(lecture_pk):
     lecture = Lecture.objects.get(pk=lecture_pk)
@@ -101,6 +103,7 @@ def get_speakers_keyboard(lecture_pk):
     )
     reply_markup = InlineKeyboardMarkup(keyboard)
     return reply_markup
+
 
 def get_text_notification(user):
     incoming_questions_count = user.incoming_questions.count()

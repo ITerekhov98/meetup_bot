@@ -18,7 +18,7 @@ from .models import Client, Questionnaire, Question, Block, Lecture, Event
 from .tg_bot_lib import \
     get_menu_keyboard, get_accept_questionnarie_keyboard, \
     check_email, get_blocks_keyboard, get_lectures_keyboard, \
-    waiting_ask_keyboard, get_next_question, get_speakers_keyboard, \
+    waiting_ask_keyboard, get_questions_keyboard, get_speakers_keyboard, \
     get_text_notification
 
 
@@ -442,7 +442,8 @@ def respond_to_questions(update: Update, context: CallbackContext):
         if check_for_new_questions.count() == questions_count:
             context.bot.send_message(
                 chat_id=update.effective_chat.id,
-                text='Вопросов больше нет!'
+                text='Вопросов больше нет!',
+                reply_markup=get_questions_keyboard()
             )
             return 'HANDLE_RESPOND'
         questions = check_for_new_questions
@@ -451,7 +452,7 @@ def respond_to_questions(update: Update, context: CallbackContext):
     context.bot.send_message(
         chat_id=update.effective_chat.id,
         text=questions[respond_index].question,
-        reply_markup=get_next_question()
+        reply_markup=get_questions_keyboard()
     )
     context.user_data['current_respond'] = respond_index    
     return 'HANDLE_RESPOND'
