@@ -58,9 +58,12 @@ def get_blocks_keyboard():
 
 def get_lectures_keyboard(block_pk):
     lectures = Lecture.objects.filter(block__pk=block_pk).filter(end__gte=timezone.now())
-    keyboard = [
-        [InlineKeyboardButton(lecture.title, callback_data=f'lecture {lecture.pk}')] for lecture in lectures
-    ]
+    keyboard = []
+    for lecture in lectures:
+        if lecture.title != 'Обед':
+            keyboard.append(
+                [InlineKeyboardButton(lecture.title, callback_data=f'lecture {lecture.pk}')]
+            )
     keyboard.append(
         [InlineKeyboardButton('Назад в меню', callback_data='back_to_menu')]
     )
@@ -79,5 +82,20 @@ def get_next_question():
         [InlineKeyboardButton('Следующий вопрос', callback_data='next')],
         [InlineKeyboardButton('Назад в меню', callback_data='back_to_menu')],
     ]
+    reply_markup = InlineKeyboardMarkup(keyboard)
+    return reply_markup
+
+def get_speakers_keyboard(lecture_pk):
+    lecture = Lecture.objects.get(pk=lecture_pk)
+    speakers = lecture.speakers.all()
+    keyboard = [
+        [InlineKeyboardButton(
+            speaker.first_name,
+            callback_data=f'speaker {speaker.pk}'
+        )
+        for speaker in speakers]]
+    keyboard.append(
+        [InlineKeyboardButton('Назад в меню', callback_data='back_to_menu')]
+    )
     reply_markup = InlineKeyboardMarkup(keyboard)
     return reply_markup

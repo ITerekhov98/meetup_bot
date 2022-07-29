@@ -18,7 +18,7 @@ from .models import Client, Questionnaire, Question, Block, Lecture, Event
 from .tg_bot_lib import \
     get_menu_keyboard, get_accept_questionnarie_keyboard, \
     check_email, get_blocks_keyboard, get_lectures_keyboard, \
-    waiting_ask_keyboard, get_next_question
+    waiting_ask_keyboard, get_next_question, get_speakers_keyboard
 
 
 RETURN_BUTTON_TEXT = '↩ Назад в меню'
@@ -275,7 +275,7 @@ def successful_payment_callback(update, context):
 
 def ask_speaker(update: Update, context: CallbackContext):
     if update.message:
-        speaker = Client.objects.get(lectures__pk=context.user_data['lecture_pk'])
+        speaker = Client.objects.get(pk=context.user_data['speaker_pk'])
         if not speaker.incoming_questions.exists():
             context.bot.send_message(
                 chat_id=speaker.tg_id,
@@ -307,7 +307,12 @@ def ask_speaker(update: Update, context: CallbackContext):
         text = 'Выберите интересующий доклад'
     elif 'lecture' in query.data:
         lecture_pk = query.data.split()[-1]
-        context.user_data['lecture_pk'] = lecture_pk
+        text = 'Выберите спикера, которому хотите задать вопрос'
+        reply_markup = get_speakers_keyboard(lecture_pk)
+
+    elif 'speaker' in query.data:
+        speaker_pk = query.data.split()[-1]
+        context.user_data['speaker_pk'] = speaker_pk
         text = 'Введите ваш вопрос'
         reply_markup = waiting_ask_keyboard()
 
