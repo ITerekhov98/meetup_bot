@@ -46,6 +46,13 @@ class LectureAdmin(admin.ModelAdmin):
     list_filter = ("block",)
     raw_id_fields = ("speakers",)
 
+    def save_model(self, request, obj, form, change):
+        obj.save()
+        for client_object in form.cleaned_data['speakers']:
+            client = Client.objects.get(pk=client_object.id)
+            client.is_speaker = True
+            client.save()
+
 
 @admin.register(Donate)
 class DonateAdmin(admin.ModelAdmin):
@@ -69,10 +76,10 @@ class NotificationAdmin(admin.ModelAdmin):
                     response = requests.get(url)
                     response.raise_for_status()
                 except HTTPError:
-                    # логируем ошибку
+                    # TODO логируем ошибку
                     pass
                 except ConnectionError:
-                    # логируем ошибку
+                    # TODO логируем ошибку
                     pass
             self.message_user(request, "Уведомление отправлено")
             return HttpResponseRedirect(".")

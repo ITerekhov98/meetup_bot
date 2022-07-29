@@ -197,13 +197,6 @@ class Lecture(models.Model):
     start = models.DateTimeField(verbose_name='Начало доклада')
     end = models.DateTimeField(verbose_name='Конец доклада')
 
-    def save(self, *args, **kwargs):
-        if self.speaker:
-            user = self.speaker
-            user.is_speaker = True
-            user.save()
-        return super(Lecture, self).save(*args, **kwargs)
-
     class Meta:
         ordering = ["end"]
         verbose_name = "Лекция"
