@@ -1,4 +1,6 @@
+from contextvars import Context
 from telegram import Update, InlineKeyboardMarkup, InlineKeyboardButton, LabeledPrice
+from telegram import Update, InlineKeyboardMarkup, InlineKeyboardButton
 from telegram.ext import (
     CallbackQueryHandler,
     CommandHandler,
@@ -13,11 +15,14 @@ from django.conf import settings
 
 from .models import Client, Questionnaire, Question, Block, Lecture, Event
 from .tg_bot_lib import \
-    get_menu_keyboard, get_accept_questionnarie_keyboard, \
+    get_menu_keyboard, get_acquaintance_keyboard, \
     check_email, get_blocks_keyboard, get_lectures_keyboard, \
-    waiting_ask_keyboard, get_questions_keyboard, get_speakers_keyboard, \
-    get_text_notification, RETURN_BUTTON_TEXT, GREETING_MSG
+    back_to_menu_keyboard, get_speakers_keyboard, get_questions_keyboard, \
+    get_text_notification, accept_acquaintance_keyboard
 
+
+RETURN_BUTTON_TEXT = '📋 Назад в меню'
+GREETING_MSG = 'Здравствуйте! Это официальный бот по поддержке участников 🤖'
 
 
 class TgChatBot(object):
@@ -96,9 +101,8 @@ def handle_menu(update: Update, context: CallbackContext):
     elif query.data == 'ask_speaker':
         return ask_speaker(update, context)
     elif query.data == 'acquaint':
-        context.user_data['current_question'] = 0
         if Questionnaire.objects.filter(client=context.user_data['user']).exists():
-            return accept_questionnarie_renewal(update, context)
+            return handle_acquaintance(update, context)
         return handle_questionnaire(update, context)
     elif query.data == 'respond_to_questions':
         return respond_to_questions(update, context)
@@ -326,7 +330,7 @@ def ask_speaker(update: Update, context: CallbackContext):
         speaker_pk = query.data.split()[-1]
         context.user_data['speaker_pk'] = speaker_pk
         text = 'Введите ваш вопрос'
-        reply_markup = waiting_ask_keyboard()
+        reply_markup = back_to_menu_keyboard()
 
     context.bot.send_message(
         chat_id=update.effective_chat.id,
@@ -337,8 +341,8 @@ def ask_speaker(update: Update, context: CallbackContext):
 
 
 def handle_questionnaire(update: Update, context: CallbackContext):
-    question_index = context.user_data.get('current_question')
-    user = context.user_data['user']
+    user = context.user_data['user']   
+    question_index = context.user_data.get('current_question', 0)
     questions_for_questionnaire = context.bot_data['questions_for_questionnaire']
     readable_questions = context.bot_data['readable_questions']
 
@@ -375,29 +379,75 @@ def handle_questionnaire(update: Update, context: CallbackContext):
     )
     context.bot.send_message(
         chat_id=update.effective_chat.id,
-        text='Спасибо что прошли опрос',
+        text='Спасибо что прошли опрос! Подобрать вам собеседника?',
+        reply_markup=get_acquaintance_keyboard()
     )
-    return 'START'
+    return 'HANDLE_ACQUAINTANCE'
 
 
-def accept_questionnarie_renewal(update, context):
-    if update.callback_query:
-        query = update.callback_query
-        query.answer()
-        if query.data == 'back_to_menu':
-            return start(update, context)
-        elif query.data == 'accept':
-            return handle_questionnaire(update, context)
+def handle_acquaintance(update, context: Context):
+    user = context.user_data['user']
+    query = update.callback_query
+    query.answer()
 
-    reply_markup = get_accept_questionnarie_keyboard()
-    text = 'Вы уже заполняли анкету. Хотите изменить данные?'
+    if query.data == 'acquaint':
+        reply_markup = get_acquaintance_keyboard()
+        text = 'Готовы с кем-нибудь познакомиться?'
+        context.bot.send_message(
+            chat_id=update.effective_chat.id,
+            text=text,
+            reply_markup=reply_markup
+        )
+        return 'HANDLE_ACQUAINTANCE' 
+
+    if query.data == 'back_to_menu':
+        return start(update, context)
+
+    elif query.data == 'update_questionnaire':
+        return handle_questionnaire(update, context)
+
+    elif 'get_contact' in query.data:
+        tg_id = query.data.split()[-1]
+        text = f'[Приятного общения!](tg://user?id={tg_id})'
+        reply_markup=back_to_menu_keyboard()
+        context.bot.send_message(
+            chat_id=update.effective_chat.id,
+            text=text,
+            reply_markup=reply_markup,
+            parse_mode='MarkdownV2',
+        )
+        return 'HANDLE_ACQUAINTANCE'
+
+    questionnaire = Questionnaire.objects \
+        .exclude(client=user) \
+        .select_related('client') \
+        .order_by('?') \
+        .first()
+
+    if not questionnaire:
+        context.bot.send_message(
+            chat_id=update.effective_chat.id,
+            text='Ого, видимо вы первый зарегестрировались! Попробуйте чуть позже',
+            reply_markup=back_to_menu_keyboard()
+        )
+        return 'HANDLE_ACQUAINTANCE' 
+        
+    text = 'Анкета участника {}\r\nДолжность {}\r\nКомпания {}'.format(
+        questionnaire.first_name,
+        questionnaire.job_title,
+        questionnaire.company
+    )
+    reply_markup = accept_acquaintance_keyboard(questionnaire.client.tg_id)
     context.bot.send_message(
         chat_id=update.effective_chat.id,
         text=text,
         reply_markup=reply_markup
     )
-    return 'ACCEPT_QUESTIONNARIE_RENEWAL'
-
+    context.bot.delete_message(
+        chat_id=update.effective_chat.id,
+        message_id=query.message.message_id
+    )
+    return 'HANDLE_ACQUAINTANCE'  
 
 
 def respond_to_questions(update: Update, context: CallbackContext):
