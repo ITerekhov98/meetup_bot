@@ -218,7 +218,7 @@ def ask_donation_sum(update: Update, context: CallbackContext):
     )
     context.bot.send_message(
         chat_id=update.effective_chat.id,
-        text='Введите сумму доната в рублях числом (не менее 60)',
+        text='Введите сумму доната в рублях числом не менее 60 :)',
         reply_markup=reply_markup
     )
     return 'HANDLE_DONATION'
