@@ -44,6 +44,8 @@ class TgChatBot(object):
         user, created = Client.objects.get_or_create(
             tg_id=update.effective_chat.id,
         )
+        if not user.first_name:
+            user.first_name = update.effective_chat.first_name
         if created:
             user.current_state = 'START'
         user.event = self.event
