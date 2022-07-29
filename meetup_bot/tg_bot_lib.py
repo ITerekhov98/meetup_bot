@@ -79,7 +79,9 @@ def waiting_ask_keyboard():
 
 def get_next_question():
     keyboard = [
+        [InlineKeyboardButton('Ответить в чат', callback_data='reply')],
         [InlineKeyboardButton('Следующий вопрос', callback_data='next')],
+        [InlineKeyboardButton('Предыдущий вопрос', callback_data='previous')],
         [InlineKeyboardButton('Назад в меню', callback_data='back_to_menu')],
     ]
     reply_markup = InlineKeyboardMarkup(keyboard)

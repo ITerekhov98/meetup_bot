@@ -391,35 +391,67 @@ def accept_questionnarie_renewal(update, context):
 
 
 def respond_to_questions(update: Update, context: CallbackContext):
-    if update.callback_query:
+    respond_index = context.user_data.get('current_respond', 0)
+    user = context.user_data['user']
+
+    if update.callback_query: 
         query = update.callback_query
         query.answer()
         if query.data == 'back_to_menu':
             return start(update, context)
 
-    respond_index = context.user_data.get('current_respond', 0)
-    user = context.user_data['user']
+        if query.data == 'reply':
+            context.bot.send_message(
+                chat_id=update.effective_chat.id,
+                text='Введите ваш ответ',
+            )
+            return 'HANDLE_RESPOND'
+        
+        if query.data == 'next':
+            respond_index += 1
+        if query.data == 'previous':
+            respond_index -= 1 if respond_index > 0 else 0
+
+    if update.message:
+        speaker_reply = update.message.text
+        question = context.user_data['questions'][respond_index]
+        text = 'Ответ на вопрос {} от {}: \r\n{}'.format(
+            question.question,
+            user.first_name,
+            speaker_reply
+        )
+        context.bot.send_message(
+            chat_id=question.from_user.tg_id,
+            text=text
+        )
+        respond_index += 1
+        context.bot.send_message(
+            chat_id=update.effective_chat.id,
+            text='Ваш ответ отправлен!'
+        )
+
     if respond_index == 0:
-        questions = [ question.question for question in user.incoming_questions.all()]
+        questions = user.incoming_questions.all().select_related('from_user')
         context.user_data['questions'] = questions
     else:
         questions = context.user_data['questions']
     
-    if respond_index == len(questions):
-        check_for_new_questions = user.incoming_questions.all()
-        if check_for_new_questions.count() == len(questions):
+    questions_count = questions.count()
+    if respond_index >= questions_count:
+        check_for_new_questions = user.incoming_questions.all().select_related('from_user')
+        if check_for_new_questions.count() == questions_count:
             context.bot.send_message(
                 chat_id=update.effective_chat.id,
                 text='Вопросов больше нет!'
             )
-            return 'START'
-        questions = [question.question for question in check_for_new_questions]
+            return 'HANDLE_RESPOND'
+        questions = check_for_new_questions
         context.user_data['questions'] = questions
 
     context.bot.send_message(
         chat_id=update.effective_chat.id,
-        text=questions[respond_index],
+        text=questions[respond_index].question,
         reply_markup=get_next_question()
-    )    
-    context.user_data['current_respond'] = respond_index+1
+    )
+    context.user_data['current_respond'] = respond_index    
     return 'HANDLE_RESPOND'
