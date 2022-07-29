@@ -22,7 +22,7 @@ from .tg_bot_lib import \
     get_text_notification
 
 
-RETURN_BUTTON_TEXT = '↩ Назад в меню'
+RETURN_BUTTON_TEXT = '📋 Назад в меню'
 GREETING_MSG = 'Здравствуйте! Это официальный бот по поддержке участников 🤖'
 
 
@@ -91,10 +91,10 @@ def handle_menu(update: Update, context: CallbackContext):
     query = update.callback_query
     query.answer()
 
-    context.bot.delete_message(
-        chat_id=update.effective_chat.id,
-        message_id=query.message.message_id
-    )
+    # context.bot.delete_message(
+    #     chat_id=update.effective_chat.id,
+    #     message_id=query.message.message_id
+    # )
     if query.data == 'program':
         return get_program_blocks(update, context)
     elif query.data == 'donate':
@@ -111,8 +111,11 @@ def handle_menu(update: Update, context: CallbackContext):
 
 
 def get_program_blocks(update: Update, context: CallbackContext):
+    query = update.callback_query
     event = context.user_data['user'].event
-    # TODO get current event, load blocks only for the event
+    context.user_data['current_block'] = ''
+    context.user_data['current_lecture'] = ''
+
     event_blocks = Block.objects.all()
 
     event_from = event.start.strftime('%d.%m %Yг.')
@@ -130,11 +133,14 @@ def get_program_blocks(update: Update, context: CallbackContext):
         [InlineKeyboardButton(RETURN_BUTTON_TEXT, callback_data='return')]
     )
 
-    reply_markup = InlineKeyboardMarkup(keyboard)
+    context.bot.delete_message(
+        chat_id=update.effective_chat.id,
+        message_id=query.message.message_id
+    )
     context.bot.send_message(
         chat_id=update.effective_chat.id,
         text=program_text,
-        reply_markup=reply_markup
+        reply_markup=InlineKeyboardMarkup(keyboard)
     )
     return 'HANDLE_PROGRAM_BLOCKS'
 
@@ -146,15 +152,18 @@ def handle_program_blocks(update: Update, context: CallbackContext):
     keyboard = []
     if query.data == 'return':
         return start(update, context)
+    elif query.data == 'return_to_blocks':
+        return get_program_blocks(update, context)
+    elif query.data != 'return_to_lectures':
+        context.user_data['current_block'] = Block.objects.get(id=query.data)
 
-    current_block = Block.objects.get(id=query.data)
+    current_block = context.user_data['current_block']
     for lecture in current_block.lectures.all():
         button_text = f'{lecture.start.strftime("%H:%M")} {lecture.title}'
         keyboard.append([InlineKeyboardButton(button_text, callback_data=lecture.id)])
 
-    keyboard.append(
-        [InlineKeyboardButton(RETURN_BUTTON_TEXT, callback_data='return')]
-    )
+    keyboard.append([InlineKeyboardButton('↩ Назад к блокам', callback_data='return_to_blocks')])
+    keyboard.append([InlineKeyboardButton(RETURN_BUTTON_TEXT, callback_data='return')])
 
     reply_markup = InlineKeyboardMarkup(keyboard)
 
@@ -176,9 +185,13 @@ def handle_program_lectures(update: Update, context: CallbackContext):
 
     if query.data == 'return':
         return start(update, context)
+    elif query.data == 'return_to_blocks':
+        return get_program_blocks(update, context)
+    elif query.data == 'return_to_lectures':
+        return handle_program_blocks(update, context)
 
-    current_lecture = Lecture.objects.get(id=query.data)
-
+    context.user_data['current_lecture'] = Lecture.objects.get(id=query.data)
+    current_lecture = context.user_data['current_lecture']
     time_from = current_lecture.start.strftime('%H:%M')
     time_to = current_lecture.end.strftime('%H:%M')
 
@@ -197,7 +210,10 @@ def handle_program_lectures(update: Update, context: CallbackContext):
                f'{current_lecture.description}'
 
     reply_markup = InlineKeyboardMarkup(
-        [[InlineKeyboardButton(RETURN_BUTTON_TEXT, callback_data='return')]]
+        [
+            [InlineKeyboardButton('↩ Назад к списку', callback_data='return_to_lectures')],
+            [InlineKeyboardButton(RETURN_BUTTON_TEXT, callback_data='return')],
+        ]
     )
 
     context.bot.delete_message(
@@ -209,7 +225,7 @@ def handle_program_lectures(update: Update, context: CallbackContext):
         text=msg_text,
         reply_markup=reply_markup
     )
-    return 'START'
+    return 'HANDLE_PROGRAM_LECTURES'
 
 
 def ask_donation_sum(update: Update, context: CallbackContext):
