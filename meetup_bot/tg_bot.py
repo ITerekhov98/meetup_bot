@@ -1,7 +1,4 @@
-from datetime import datetime
-
 from telegram import Update, InlineKeyboardMarkup, InlineKeyboardButton, LabeledPrice
-from telegram import Update, InlineKeyboardMarkup, InlineKeyboardButton
 from telegram.ext import (
     CallbackQueryHandler,
     CommandHandler,
@@ -19,11 +16,8 @@ from .tg_bot_lib import \
     get_menu_keyboard, get_accept_questionnarie_keyboard, \
     check_email, get_blocks_keyboard, get_lectures_keyboard, \
     waiting_ask_keyboard, get_questions_keyboard, get_speakers_keyboard, \
-    get_text_notification
+    get_text_notification, RETURN_BUTTON_TEXT, GREETING_MSG
 
-
-RETURN_BUTTON_TEXT = '📋 Назад в меню'
-GREETING_MSG = 'Здравствуйте! Это официальный бот по поддержке участников 🤖'
 
 
 class TgChatBot(object):

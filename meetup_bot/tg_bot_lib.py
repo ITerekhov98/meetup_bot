@@ -7,6 +7,10 @@ from email_validate import validate
 from .models import Block, Lecture
 
 
+RETURN_BUTTON_TEXT = '📋 Назад в меню'
+GREETING_MSG = 'Здравствуйте! Это официальный бот по поддержке участников 🤖'
+
+
 def get_menu_keyboard(is_speaker):
     keyboard = [
         [InlineKeyboardButton('📋  Программа мероприятия', callback_data='program')],
@@ -25,7 +29,7 @@ def get_menu_keyboard(is_speaker):
 def get_accept_questionnarie_keyboard():
     keyboard = [
         [InlineKeyboardButton('Подтвердить', callback_data='accept')],
-        [InlineKeyboardButton('Назад в меню', callback_data='back_to_menu')],  
+        [InlineKeyboardButton(RETURN_BUTTON_TEXT, callback_data='back_to_menu')],
     ]
     reply_markup = InlineKeyboardMarkup(keyboard)
     return reply_markup
@@ -51,7 +55,7 @@ def get_blocks_keyboard():
         [InlineKeyboardButton(block.title, callback_data=f'block {block.pk}')] for block in blocks
     ]
     keyboard.append(
-        [InlineKeyboardButton('Назад в меню', callback_data='back_to_menu')]
+        [InlineKeyboardButton(RETURN_BUTTON_TEXT, callback_data='back_to_menu')]
     )
     reply_markup = InlineKeyboardMarkup(keyboard)
     return reply_markup
@@ -65,14 +69,14 @@ def get_lectures_keyboard(block_pk):
                 [InlineKeyboardButton(lecture.title, callback_data=f'lecture {lecture.pk}')]
             )
     keyboard.append(
-        [InlineKeyboardButton('Назад в меню', callback_data='back_to_menu')]
+        [InlineKeyboardButton(RETURN_BUTTON_TEXT, callback_data='back_to_menu')]
     )
     reply_markup = InlineKeyboardMarkup(keyboard)
     return reply_markup
 
 def waiting_ask_keyboard():
     keyboard = [
-        [InlineKeyboardButton('Назад в меню', callback_data='back_to_menu')]
+        [InlineKeyboardButton(RETURN_BUTTON_TEXT, callback_data='back_to_menu')]
     ]
     reply_markup = InlineKeyboardMarkup(keyboard)
     return reply_markup
@@ -83,7 +87,7 @@ def get_questions_keyboard():
         [InlineKeyboardButton('Ответить в чат', callback_data='reply')],
         [InlineKeyboardButton('Следующий вопрос', callback_data='next')],
         [InlineKeyboardButton('Предыдущий вопрос', callback_data='previous')],
-        [InlineKeyboardButton('Назад в меню', callback_data='back_to_menu')],
+        [InlineKeyboardButton(RETURN_BUTTON_TEXT, callback_data='back_to_menu')],
     ]
     reply_markup = InlineKeyboardMarkup(keyboard)
     return reply_markup
@@ -102,7 +106,7 @@ def get_speakers_keyboard(lecture_pk):
             )]
         )
     keyboard.append(
-        [InlineKeyboardButton('Назад в меню', callback_data='back_to_menu')]
+        [InlineKeyboardButton(RETURN_BUTTON_TEXT, callback_data='back_to_menu')]
     )
     reply_markup = InlineKeyboardMarkup(keyboard)
     return reply_markup
