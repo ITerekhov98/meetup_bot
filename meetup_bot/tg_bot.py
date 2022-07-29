@@ -363,59 +363,75 @@ def handle_questionnaire(update: Update, context: CallbackContext):
     )
     context.bot.send_message(
         chat_id=update.effective_chat.id,
-        text='Спасибо что прошли опрос',
+        text='Спасибо что прошли опрос! Подобрать вам собеседника?',
+        reply_markup=get_acquaintance_keyboard()
     )
-    return handle_acquaintance(update, context)
+    return 'HANDLE_ACQUAINTANCE'
 
 
 def handle_acquaintance(update, context: Context):
-    user = context.user_data['user'] 
-    if update.callback_query:
-        query = update.callback_query
-        query.answer()
-        if query.data in ('accept', 'next'):
-            questionnaire = Questionnaire.objects.exclude(client=user).select_related('client').order_by('?').first()
-            text = 'Анкета участника {}\r\nДолжность {}\r\nКомпания {}'.format(
-                questionnaire.first_name,
-                questionnaire.job_title,
-                questionnaire.company
-            )
-            reply_markup = accept_acquaintance_keyboard(questionnaire.client.tg_id)
-            context.bot.send_message(
-                chat_id=update.effective_chat.id,
-                text=text,
-                reply_markup=reply_markup
-            )
-            context.bot.delete_message(
-                chat_id=update.effective_chat.id,
-                message_id=query.message.message_id
-            )
-            return 'ACCEPT_QUESTIONNARIE_RENEWAL'  
-        if 'get_contact' in query.data:
-            tg_id = query.data.split()[-1]
-            text = f'[Приятного общения!](tg://user?id={tg_id})'
-            reply_markup=back_to_menu_keyboard()
-            context.bot.send_message(
-                chat_id=update.effective_chat.id,
-                text=text,
-                reply_markup=reply_markup,
-                parse_mode='MarkdownV2',
-            )
-            return 'ACCEPT_QUESTIONNARIE_RENEWAL'
-        if query.data == 'back_to_menu':
-            return start(update, context)
-        elif query.data == 'update_questionnaire':
-            return handle_questionnaire(update, context)
+    user = context.user_data['user']
+    query = update.callback_query
+    query.answer()
 
-    reply_markup = get_acquaintance_keyboard()
-    text = 'Готовы с кем-нибудь познакомиться?'
+    if query.data == 'acquaint':
+        reply_markup = get_acquaintance_keyboard()
+        text = 'Готовы с кем-нибудь познакомиться?'
+        context.bot.send_message(
+            chat_id=update.effective_chat.id,
+            text=text,
+            reply_markup=reply_markup
+        )
+        return 'HANDLE_ACQUAINTANCE' 
+
+    if query.data == 'back_to_menu':
+        return start(update, context)
+
+    elif query.data == 'update_questionnaire':
+        return handle_questionnaire(update, context)
+
+    elif 'get_contact' in query.data:
+        tg_id = query.data.split()[-1]
+        text = f'[Приятного общения!](tg://user?id={tg_id})'
+        reply_markup=back_to_menu_keyboard()
+        context.bot.send_message(
+            chat_id=update.effective_chat.id,
+            text=text,
+            reply_markup=reply_markup,
+            parse_mode='MarkdownV2',
+        )
+        return 'HANDLE_ACQUAINTANCE'
+
+    questionnaire = Questionnaire.objects \
+        .exclude(client=user) \
+        .select_related('client') \
+        .order_by('?') \
+        .first()
+
+    if not questionnaire:
+        context.bot.send_message(
+            chat_id=update.effective_chat.id,
+            text='Ого, видимо вы первый зарегестрировались! Попробуйте чуть позже',
+            reply_markup=back_to_menu_keyboard()
+        )
+        return 'HANDLE_ACQUAINTANCE' 
+        
+    text = 'Анкета участника {}\r\nДолжность {}\r\nКомпания {}'.format(
+        questionnaire.first_name,
+        questionnaire.job_title,
+        questionnaire.company
+    )
+    reply_markup = accept_acquaintance_keyboard(questionnaire.client.tg_id)
     context.bot.send_message(
         chat_id=update.effective_chat.id,
         text=text,
         reply_markup=reply_markup
     )
-    return 'ACCEPT_QUESTIONNARIE_RENEWAL'
-
+    context.bot.delete_message(
+        chat_id=update.effective_chat.id,
+        message_id=query.message.message_id
+    )
+    return 'HANDLE_ACQUAINTANCE'  
 
 
 def respond_to_questions(update: Update, context: CallbackContext):

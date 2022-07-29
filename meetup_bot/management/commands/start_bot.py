@@ -37,7 +37,7 @@ def start_bot():
             'HANDLE_PROGRAM_BLOCKS': handle_program_blocks,
             'HANDLE_PROGRAM_LECTURES': handle_program_lectures,
             'HANDLE_DONATION': handle_donation,
-            'ACCEPT_QUESTIONNARIE_RENEWAL': handle_acquaintance
+            'HANDLE_ACQUAINTANCE': handle_acquaintance
         },
         questions_for_questionnaire,
         readable_questions
