@@ -11,6 +11,10 @@ def get_upload_event_path(instance, filename):
     return Path(instance.title) / filename
 
 
+def get_upload_resume_path(instance, filename):
+    return Path(instance.first_name) / filename
+
+
 class Event(models.Model):
     """Мероприятие"""
     title = models.CharField(
@@ -131,6 +135,12 @@ class Questionnaire(models.Model):
         max_length=50,
         blank=True
     )
+    resume = models.FileField(
+        verbose_name='Резюме',
+        blank=True,
+        null=True,
+        upload_to=get_upload_resume_path
+    )
 
     class Meta:
         verbose_name = "Анкета"
@@ -245,3 +255,21 @@ class Notification(models.Model):
 
     def __str__(self):
         return f'Уведомление {self.id} - {self.title if self.title else ""}'
+
+
+class ProposedLecture(models.Model):
+    user = models.ForeignKey(
+        Client,
+        on_delete=models.CASCADE,
+        verbose_name='Пользователь',
+        related_name='proposed_lectures'
+    )
+    lecture_title = models.TextField(
+        verbose_name='Описание лекции',
+        blank=True)
+    questionnaire = models.OneToOneField(
+        Questionnaire,
+        verbose_name='Анкета',
+        on_delete=models.CASCADE,
+        primary_key=True
+    )
