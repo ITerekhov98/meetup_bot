@@ -21,7 +21,7 @@ from .tg_bot_lib import \
     waiting_ask_keyboard, get_next_question
 
 
-RETURN_BUTTON_TEXT = '↩ Назад'
+RETURN_BUTTON_TEXT = '↩ Назад в меню'
 GREETING_MSG = 'Здравствуйте! Это официальный бот по поддержке участников 🤖'
 
 
@@ -95,6 +95,7 @@ def handle_menu(update: Update, context: CallbackContext):
     if query.data == 'program':
         return get_program_blocks(update, context)
     elif query.data == 'donate':
+        return ask_donation_sum(update, context)
         return handle_donation(update, context)
     elif query.data == 'ask_speaker':
         return ask_speaker(update, context)
@@ -142,7 +143,8 @@ def handle_program_blocks(update: Update, context: CallbackContext):
 
     keyboard = []
     if query.data == 'return':
-        return 'START'
+        return start(update, context)
+
     current_block = Block.objects.get(id=query.data)
     for lecture in current_block.lectures.all():
         keyboard.append([InlineKeyboardButton(lecture.title, callback_data=lecture.id)])
@@ -170,14 +172,19 @@ def handle_program_lectures(update: Update, context: CallbackContext):
     query.answer()
 
     if query.data == 'return':
-        return 'START'
+        return start(update, context)
+
     current_lecture = Lecture.objects.get(id=query.data)
 
     time_from = current_lecture.start.strftime('%H:%M')
     time_to = current_lecture.end.strftime('%H:%M')
 
-    if current_lecture.speaker:
-        speaker_data = f'Спикер: {current_lecture.speaker.first_name}, {current_lecture.speaker.job_title}'
+    lecture_speakers = current_lecture.speakers.all()
+
+    if lecture_speakers:
+        speaker_data = 'Спикер(ы):\n'
+        for speaker in lecture_speakers:
+            speaker_data += f'{speaker.first_name}, {speaker.job_title}\n'
     else:
         speaker_data = ''
 
@@ -202,8 +209,25 @@ def handle_program_lectures(update: Update, context: CallbackContext):
     return 'START'
 
 
+def ask_donation_sum(update: Update, context: CallbackContext):
+    reply_markup = InlineKeyboardMarkup(
+        [[InlineKeyboardButton(RETURN_BUTTON_TEXT, callback_data='return')]]
+    )
+    context.bot.send_message(
+        chat_id=update.effective_chat.id,
+        text='Введите сумму доната в рублях числом (не менее 60)',
+        reply_markup=reply_markup
+    )
+    return 'HANDLE_DONATION'
+
 
 def handle_donation(update: Update, context: CallbackContext):
+    query = update.callback_query
+    if query and query.data == 'return':
+        return start(update, context)
+
+    users_sum = int(update.message.text)
+
     chat_id = update.effective_chat.id
     title = 'Задонатить'
     description = 'Организаторам на печеньки 🍪'
@@ -211,9 +235,13 @@ def handle_donation(update: Update, context: CallbackContext):
     provider_token = settings.TG_MERCHANT_TOKEN
     start_parameter = 'test-payment'
     currency = 'RUB'
-    sum_in_rub = 200
+    sum_in_rub = users_sum
     prices = [LabeledPrice('Донат организаторам', sum_in_rub * 100)]
 
+    context.bot.delete_message(
+        chat_id=update.effective_chat.id,
+        message_id=update.message.message_id
+    )
     context.bot.send_invoice(chat_id, title, description, payload,
                              provider_token, start_parameter, currency, prices)
     return 'START'
