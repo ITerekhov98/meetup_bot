@@ -99,3 +99,15 @@ def get_speakers_keyboard(lecture_pk):
     )
     reply_markup = InlineKeyboardMarkup(keyboard)
     return reply_markup
+
+def get_text_notification(user):
+    incoming_questions_count = user.incoming_questions.count()
+    if incoming_questions_count == 0:
+        text = 'Вам поступил вопрос по докладу! Не забудьте ответить'
+    elif incoming_questions_count == 2:
+        text = 'Для вас уже есть 3 вопроса!'
+    elif incoming_questions_count in (4, 9):
+        text = f'Для вас уже есть {incoming_questions_count + 1} вопросов!'
+    else:
+        text = ''
+    return text
