@@ -92,12 +92,15 @@ def get_questions_keyboard():
 def get_speakers_keyboard(lecture_pk):
     lecture = Lecture.objects.get(pk=lecture_pk)
     speakers = lecture.speakers.all()
-    keyboard = [
-        [InlineKeyboardButton(
-            speaker.first_name,
-            callback_data=f'speaker {speaker.pk}'
+    keyboard = []
+    for speaker in speakers:
+        alias = speaker.first_name if speaker.first_name else speaker.tg_id
+        keyboard.append(
+            [InlineKeyboardButton(
+                alias,
+                callback_data=f'speaker {speaker.pk}'
+            )]
         )
-        for speaker in speakers]]
     keyboard.append(
         [InlineKeyboardButton('Назад в меню', callback_data='back_to_menu')]
     )
