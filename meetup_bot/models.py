@@ -273,3 +273,10 @@ class ProposedLecture(models.Model):
         on_delete=models.CASCADE,
         primary_key=True
     )
+
+    class Meta:
+        verbose_name = "Предложенная лекция"
+        verbose_name_plural = "Предложенные лекции"
+
+    def __str__(self):
+        return f'Предложенная лекция от {self.questionnaire.first_name}'

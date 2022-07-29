@@ -4,11 +4,8 @@ from django.contrib import admin
 from django.http import HttpResponseRedirect
 from requests.exceptions import HTTPError, ConnectionError
 
-from .models import Event, Client, Lecture, Donate, Block, Notification, Questionnaire
-
-@admin.register(Questionnaire)
-class QuestionnaireAdmin(admin.ModelAdmin):
-    search_fields = ["client",]
+from .models import Event, Client, Lecture, Donate, Block, Notification, \
+    Questionnaire, ProposedLecture
 
 
 class LectureInline(admin.TabularInline):
@@ -61,6 +58,17 @@ class LectureAdmin(admin.ModelAdmin):
 @admin.register(Donate)
 class DonateAdmin(admin.ModelAdmin):
     list_filter = ("event",)
+
+
+@admin.register(Questionnaire)
+class QuestionnaireAdmin(admin.ModelAdmin):
+    search_fields = ["client", ]
+
+
+@admin.register(ProposedLecture)
+class ProposedLectureAdmin(admin.ModelAdmin):
+    search_fields = ["lecture_title", ]
+    list_filter = ("user",)
 
 
 @admin.register(Notification)
