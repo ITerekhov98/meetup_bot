@@ -4,7 +4,11 @@ from django.contrib import admin
 from django.http import HttpResponseRedirect
 from requests.exceptions import HTTPError, ConnectionError
 
-from .models import Event, Client, Lecture, Donate, Block, Notification
+from .models import Event, Client, Lecture, Donate, Block, Notification, Questionnaire
+
+@admin.register(Questionnaire)
+class QuestionnaireAdmin(admin.ModelAdmin):
+    search_fields = ["client",]
 
 
 class LectureInline(admin.TabularInline):
