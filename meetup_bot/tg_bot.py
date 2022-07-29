@@ -99,7 +99,6 @@ def handle_menu(update: Update, context: CallbackContext):
         return get_program_blocks(update, context)
     elif query.data == 'donate':
         return ask_donation_sum(update, context)
-        return handle_donation(update, context)
     elif query.data == 'ask_speaker':
         return ask_speaker(update, context)
     elif query.data == 'acquaint':
@@ -150,7 +149,8 @@ def handle_program_blocks(update: Update, context: CallbackContext):
 
     current_block = Block.objects.get(id=query.data)
     for lecture in current_block.lectures.all():
-        keyboard.append([InlineKeyboardButton(lecture.title, callback_data=lecture.id)])
+        button_text = f'{lecture.start.strftime("%H:%M")} {lecture.title}'
+        keyboard.append([InlineKeyboardButton(button_text, callback_data=lecture.id)])
 
     keyboard.append(
         [InlineKeyboardButton(RETURN_BUTTON_TEXT, callback_data='return')]
@@ -192,7 +192,7 @@ def handle_program_lectures(update: Update, context: CallbackContext):
         speaker_data = ''
 
     msg_text = f'Доклад: {current_lecture.title}\n\n' \
-               f'С {time_from} до {time_to}\n\n' \
+               f'{time_from} – {time_to}\n\n' \
                f'{speaker_data}\n' \
                f'{current_lecture.description}'
 
