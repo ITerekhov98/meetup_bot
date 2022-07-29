@@ -193,8 +193,8 @@ def handle_program_lectures(update: Update, context: CallbackContext):
     else:
         speaker_data = ''
 
-    if current_lecture.title == 'Обед':
-        msg_text = f'Перерыв на обед {time_from} – {time_to}'
+    if current_lecture.is_timeout:
+        msg_text = f'Перерыв с {time_from} до {time_to}'
     else:
         msg_text = f'Доклад: {current_lecture.title}\n\n' \
                    f'{time_from} – {time_to}\n\n' \
