@@ -22,9 +22,10 @@ def get_menu_keyboard(is_speaker):
     return reply_markup
 
 
-def get_accept_questionnarie_keyboard():
+def get_acquaintance_keyboard():
     keyboard = [
-        [InlineKeyboardButton('Подтвердить', callback_data='accept')],
+        [InlineKeyboardButton('Да', callback_data='accept')],
+        [InlineKeyboardButton('Внести изменения в анкету', callback_data='update_questionnaire')],
         [InlineKeyboardButton('Назад в меню', callback_data='back_to_menu')],  
     ]
     reply_markup = InlineKeyboardMarkup(keyboard)
@@ -70,7 +71,7 @@ def get_lectures_keyboard(block_pk):
     reply_markup = InlineKeyboardMarkup(keyboard)
     return reply_markup
 
-def waiting_ask_keyboard():
+def back_to_menu_keyboard():
     keyboard = [
         [InlineKeyboardButton('Назад в меню', callback_data='back_to_menu')]
     ]
@@ -119,3 +120,12 @@ def get_text_notification(user):
     else:
         text = ''
     return text
+
+def accept_acquaintance_keyboard(user_tg_id):
+    keyboard = [
+        [InlineKeyboardButton('Подходит!', callback_data=f'get_contact {user_tg_id}')],
+        [InlineKeyboardButton('Можно ещё посмотреть?', callback_data='next')],
+        [InlineKeyboardButton('Назад в меню', callback_data='back_to_menu')]
+    ]
+    reply_markup = InlineKeyboardMarkup(keyboard)
+    return reply_markup
