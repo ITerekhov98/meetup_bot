@@ -85,10 +85,6 @@ def handle_menu(update: Update, context: CallbackContext):
     query = update.callback_query
     query.answer()
 
-    # context.bot.delete_message(
-    #     chat_id=update.effective_chat.id,
-    #     message_id=query.message.message_id
-    # )
     if query.data == 'program':
         return get_program_blocks(update, context)
     elif query.data == 'donate':
@@ -197,10 +193,13 @@ def handle_program_lectures(update: Update, context: CallbackContext):
     else:
         speaker_data = ''
 
-    msg_text = f'Доклад: {current_lecture.title}\n\n' \
-               f'{time_from} – {time_to}\n\n' \
-               f'{speaker_data}\n' \
-               f'{current_lecture.description}'
+    if current_lecture.title == 'Обед':
+        msg_text = f'Перерыв на обед {time_from} – {time_to}'
+    else:
+        msg_text = f'Доклад: {current_lecture.title}\n\n' \
+                   f'{time_from} – {time_to}\n\n' \
+                   f'{speaker_data}\n' \
+                   f'{current_lecture.description}'
 
     reply_markup = InlineKeyboardMarkup(
         [
