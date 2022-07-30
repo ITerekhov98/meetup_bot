@@ -37,7 +37,7 @@ class BlockAdmin(admin.ModelAdmin):
 
 @admin.register(Client)
 class ClientAdmin(admin.ModelAdmin):
-    list_display = ("first_name", "tg_id", "job_title", "is_speaker")
+    list_display = ("tg_id", "first_name", "job_title", "is_speaker")
     list_editable = ["job_title"]
     readonly_fields = ["current_state"]
     list_filter = ("event", "is_speaker")
