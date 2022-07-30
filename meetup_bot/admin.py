@@ -22,12 +22,14 @@ class BlockInline(admin.TabularInline):
 
 @admin.register(Event)
 class EventAdmin(admin.ModelAdmin):
+    list_display = ("title", "start", "end")
     search_fields = ["title", ]
     inlines = [BlockInline]
 
 
 @admin.register(Block)
 class BlockAdmin(admin.ModelAdmin):
+    list_display = ("title", "start", "end")
     search_fields = ["title", ]
     list_filter = ("event",)
     inlines = [LectureInline]
@@ -35,14 +37,17 @@ class BlockAdmin(admin.ModelAdmin):
 
 @admin.register(Client)
 class ClientAdmin(admin.ModelAdmin):
+    list_display = ("first_name", "tg_id", "job_title", "is_speaker")
+    list_editable = ["job_title"]
     readonly_fields = ["current_state"]
-    list_filter = ("event",)
-    search_fields = ["tg_id", ]
+    list_filter = ("event", "is_speaker")
+    search_fields = ["tg_id", "first_name"]
     fields = ("tg_id", "is_speaker", "event", "first_name", "job_title")
 
 
 @admin.register(Lecture)
 class LectureAdmin(admin.ModelAdmin):
+    list_display = ("title", "start", "end", "get_speakers")
     search_fields = ["title", ]
     list_filter = ("block",)
     raw_id_fields = ("speakers",)
@@ -54,15 +59,21 @@ class LectureAdmin(admin.ModelAdmin):
             client.is_speaker = True
             client.save()
 
+    def get_speakers(self, obj):
+        return obj.get_speakers()
+
+    get_speakers.short_description = 'Спикеры'
+
 
 @admin.register(Donate)
 class DonateAdmin(admin.ModelAdmin):
-    list_filter = ("event",)
+    list_display = ("client", "amount")
 
 
 @admin.register(Questionnaire)
 class QuestionnaireAdmin(admin.ModelAdmin):
-    search_fields = ["client", ]
+    list_display = ("client", "first_name", "job_title", "company", "email")
+    search_fields = ["client", "first_name", "company"]
 
 
 @admin.register(ProposedLecture)
@@ -73,6 +84,7 @@ class ProposedLectureAdmin(admin.ModelAdmin):
 
 @admin.register(Notification)
 class NotificationAdmin(admin.ModelAdmin):
+    list_display = ("title", "message")
     search_fields = ["title", ]
 
     change_form_template = "admin/model_notification.html"
