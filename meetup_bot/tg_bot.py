@@ -11,7 +11,7 @@ from telegram.ext import (
 
 from django.conf import settings
 
-from .models import Client, Questionnaire, Question, Block, Lecture, Event
+from .models import Client, Questionnaire, Question, Block, Lecture, Donate
 from .tg_bot_lib import \
     get_menu_keyboard, get_acquaintance_keyboard, \
     check_email, get_blocks_keyboard, get_lectures_keyboard, \
@@ -221,6 +221,11 @@ def handle_program_lectures(update: Update, context: CallbackContext):
 
 
 def ask_donation_sum(update: Update, context: CallbackContext):
+    context.bot.delete_message(
+        chat_id=update.effective_chat.id,
+        message_id=update.callback_query.message.message_id
+    )
+
     reply_markup = InlineKeyboardMarkup(
         [[InlineKeyboardButton(RETURN_BUTTON_TEXT, callback_data='return')]]
     )
@@ -275,6 +280,14 @@ def precheckout_callback(update, context):
 
 def successful_payment_callback(update, context):
     reply_markup = InlineKeyboardMarkup([[InlineKeyboardButton(RETURN_BUTTON_TEXT, callback_data='return')]])
+
+    donated_sum = update.message.successful_payment.total_amount / 100
+
+    Donate.objects.create(
+        amount=donated_sum,
+        client=context.user_data['user'],
+        event=context.user_data['user'].event
+    )
 
     update.message.reply_text(
         text='Спасибо за донат!',
