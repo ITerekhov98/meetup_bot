@@ -133,3 +133,17 @@ def accept_acquaintance_keyboard(user_tg_id):
     ]
     reply_markup = InlineKeyboardMarkup(keyboard)
     return reply_markup
+
+
+def delete_callback_msg(update, context):
+    context.bot.delete_message(
+        chat_id=update.effective_chat.id,
+        message_id=update.callback_query.message.message_id
+    )
+
+
+def delete_update_msg(update, context):
+    context.bot.delete_message(
+        chat_id=update.effective_chat.id,
+        message_id=update.message.message_id
+    )

@@ -1,5 +1,6 @@
 from contextvars import Context
-from telegram import Update, InlineKeyboardMarkup, InlineKeyboardButton, LabeledPrice
+
+from telegram import Update, InlineKeyboardMarkup, InlineKeyboardButton, LabeledPrice, error
 from telegram.ext import (
     CallbackQueryHandler,
     CommandHandler,
@@ -17,7 +18,7 @@ from .tg_bot_lib import \
     check_email, get_blocks_keyboard, get_lectures_keyboard, \
     back_to_menu_keyboard, get_speakers_keyboard, get_questions_keyboard, \
     get_text_notification, accept_acquaintance_keyboard, \
-    RETURN_BUTTON_TEXT, GREETING_MSG
+    RETURN_BUTTON_TEXT, GREETING_MSG, delete_callback_msg, delete_update_msg
 
 
 class TgChatBot(object):
@@ -68,10 +69,7 @@ def start(update: Update, context: CallbackContext):
 
     query = update.callback_query
     if query:
-        context.bot.delete_message(
-            chat_id=update.effective_chat.id,
-            message_id=query.message.message_id
-        )
+        delete_callback_msg(update, context)
 
     context.bot.send_message(
         chat_id=update.effective_chat.id,
@@ -122,10 +120,7 @@ def get_program_blocks(update: Update, context: CallbackContext):
         [InlineKeyboardButton(RETURN_BUTTON_TEXT, callback_data='return')]
     )
 
-    context.bot.delete_message(
-        chat_id=update.effective_chat.id,
-        message_id=query.message.message_id
-    )
+    delete_callback_msg(update, context)
     context.bot.send_message(
         chat_id=update.effective_chat.id,
         text=program_text,
@@ -156,10 +151,7 @@ def handle_program_blocks(update: Update, context: CallbackContext):
 
     reply_markup = InlineKeyboardMarkup(keyboard)
 
-    context.bot.delete_message(
-        chat_id=update.effective_chat.id,
-        message_id=query.message.message_id
-    )
+    delete_callback_msg(update, context)
     context.bot.send_message(
         chat_id=update.effective_chat.id,
         text=f'Доклады блока: {current_block.title}',
@@ -208,10 +200,7 @@ def handle_program_lectures(update: Update, context: CallbackContext):
         ]
     )
 
-    context.bot.delete_message(
-        chat_id=update.effective_chat.id,
-        message_id=query.message.message_id
-    )
+    delete_callback_msg(update, context)
     context.bot.send_message(
         chat_id=update.effective_chat.id,
         text=msg_text,
@@ -221,10 +210,7 @@ def handle_program_lectures(update: Update, context: CallbackContext):
 
 
 def ask_donation_sum(update: Update, context: CallbackContext):
-    context.bot.delete_message(
-        chat_id=update.effective_chat.id,
-        message_id=update.callback_query.message.message_id
-    )
+    delete_callback_msg(update, context)
 
     reply_markup = InlineKeyboardMarkup(
         [[InlineKeyboardButton(RETURN_BUTTON_TEXT, callback_data='return')]]
@@ -242,7 +228,15 @@ def handle_donation(update: Update, context: CallbackContext):
     if query and query.data == 'return':
         return start(update, context)
 
-    users_sum = int(update.message.text)
+    try:
+        users_sum = int(update.message.text)
+    except ValueError:
+        delete_update_msg(update, context)
+        context.bot.send_message(
+            chat_id=update.effective_chat.id,
+            text=f'Введите сумму числом. Вы ввели «{update.message.text}»'
+        )
+        return 'HANDLE_DONATION'
 
     chat_id = update.effective_chat.id
     title = 'Задонатить'
@@ -254,12 +248,17 @@ def handle_donation(update: Update, context: CallbackContext):
     sum_in_rub = users_sum
     prices = [LabeledPrice('Донат организаторам', sum_in_rub * 100)]
 
-    context.bot.delete_message(
-        chat_id=update.effective_chat.id,
-        message_id=update.message.message_id
-    )
-    context.bot.send_invoice(chat_id, title, description, payload,
-                             provider_token, start_parameter, currency, prices)
+    delete_update_msg(update, context)
+    try:
+        context.bot.send_invoice(chat_id, title, description, payload,
+                                 provider_token, start_parameter, currency, prices)
+    except error.BadRequest:
+        context.bot.send_message(
+            chat_id=update.effective_chat.id,
+            text=f'Введена неверная сумма, попробуйте снова'
+        )
+        return 'HANDLE_DONATION'
+
     return 'START'
 
 
