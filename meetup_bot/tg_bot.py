@@ -1,3 +1,4 @@
+import shutil
 from contextvars import Context
 
 from django.conf import settings
@@ -526,11 +527,13 @@ def handle_questionnaire_for_signup(update: Update, context: CallbackContext):
 
 
 def get_resume(update, context):
-    resume = context.bot.get_file(update.message.document).download()
+    resume = context.bot.get_file(update.message.document).download(
+        custom_path=update.message.document.file_name)
     questionnaire = Questionnaire.objects.filter(
         client=context.user_data['user'])[0]
     questionnaire.resume = resume
     questionnaire.save()
+    shutil.move(update.message.document.file_name, "media/")
     context.bot.send_message(
         chat_id=update.effective_chat.id,
         text='Введите вашу тему',
