@@ -1,6 +1,4 @@
 import os
-
-import shutil
 from contextvars import Context
 
 from django.conf import settings
