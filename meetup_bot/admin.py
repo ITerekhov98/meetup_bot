@@ -20,6 +20,17 @@ class BlockInline(admin.TabularInline):
     extra = 0
 
 
+class ProposedLectureInline(admin.TabularInline):
+    model = ProposedLecture
+    extra = 0
+
+
+class QuestionnaireInline(admin.TabularInline):
+    model = Questionnaire
+    extra = 0
+    max_num = 1
+
+
 @admin.register(Event)
 class EventAdmin(admin.ModelAdmin):
     list_display = ("title", "start", "end")
@@ -39,10 +50,10 @@ class BlockAdmin(admin.ModelAdmin):
 class ClientAdmin(admin.ModelAdmin):
     list_display = ("tg_id", "first_name", "job_title", "is_speaker")
     list_editable = ["job_title"]
-    readonly_fields = ["current_state"]
     list_filter = ("event", "is_speaker")
     search_fields = ["tg_id", "first_name"]
     fields = ("tg_id", "is_speaker", "event", "first_name", "job_title")
+    inlines = [QuestionnaireInline, ProposedLectureInline]
 
 
 @admin.register(Lecture)
