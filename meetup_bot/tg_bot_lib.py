@@ -1,8 +1,6 @@
-from datetime import datetime
 from django.utils import timezone
-
-from telegram import InlineKeyboardButton, InlineKeyboardMarkup
 from email_validate import validate
+from telegram import InlineKeyboardButton, InlineKeyboardMarkup
 
 from .models import Block, Lecture
 
@@ -18,6 +16,8 @@ def get_menu_keyboard(is_speaker):
                               callback_data='ask_speaker')],
         [InlineKeyboardButton('🤝  Познакомиться', callback_data='acquaint')],
         [InlineKeyboardButton('💸  Донат', callback_data='donate')],
+        [InlineKeyboardButton('📢 Записаться в спикеры',
+                              callback_data='signup_speakers')],
     ]
     if is_speaker:
         keyboard.append(

@@ -53,7 +53,6 @@ class BlockAdmin(admin.ModelAdmin):
 @admin.register(Client)
 class ClientAdmin(admin.ModelAdmin):
     list_display = ("tg_id", "first_name", "job_title", "is_speaker")
-    list_editable = ["job_title"]
     list_filter = ("event", "is_speaker")
     search_fields = ["tg_id", "first_name"]
     fields = ("tg_id", "is_speaker", "event", "first_name", "job_title")
@@ -95,6 +94,20 @@ class QuestionnaireAdmin(admin.ModelAdmin):
 class ProposedLectureAdmin(admin.ModelAdmin):
     search_fields = ["lecture_title", ]
     list_filter = ("user",)
+    list_display = (
+        "user",
+        "lecture_title",
+        "get_speaker_name",
+        "get_speaker_title_job")
+
+    def get_speaker_name(self, obj):
+        return obj.get_speaker_name()
+
+    def get_speaker_title_job(self, obj):
+        return obj.get_speaker_title_job()
+
+    get_speaker_name.short_description = 'Имя пользователя'
+    get_speaker_title_job.short_description = 'Должность пользователя'
 
 
 @admin.register(Notification)

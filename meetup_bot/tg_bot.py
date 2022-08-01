@@ -12,7 +12,8 @@ from telegram.ext import (
     CallbackContext, PreCheckoutQueryHandler
 )
 
-from .models import Client, Questionnaire, Question, Block, Lecture, Donate
+from .models import Client, Questionnaire, Question, Block, Lecture, Donate, \
+    ProposedLecture
 from .tg_bot_lib import \
     get_menu_keyboard, get_acquaintance_keyboard, \
     check_email, get_blocks_keyboard, get_lectures_keyboard, \
@@ -37,6 +38,8 @@ class TgChatBot(object):
             CommandHandler('start', self.handle_users_reply))
         self.updater.dispatcher.add_handler(
             MessageHandler(Filters.text, self.handle_users_reply))
+        self.updater.dispatcher.add_handler(
+            MessageHandler(Filters.document, get_resume))
         self.updater.dispatcher.add_handler(
             PreCheckoutQueryHandler(precheckout_callback))
         self.updater.dispatcher.add_handler(
@@ -97,6 +100,8 @@ def handle_menu(update: Update, context: CallbackContext):
         return ask_donation_sum(update, context)
     elif query.data == 'ask_speaker':
         return ask_speaker(update, context)
+    elif query.data == 'signup_speakers':
+        return handle_signup_speakers(update, context)
     elif query.data == 'acquaint':
         if Questionnaire.objects.filter(
                 client=context.user_data['user']).exists():
@@ -471,6 +476,99 @@ def handle_acquaintance(update, context: Context):
         message_id=query.message.message_id
     )
     return 'HANDLE_ACQUAINTANCE'
+
+
+def handle_questionnaire_for_signup(update: Update, context: CallbackContext):
+    user = context.user_data['user']
+    question_index = context.user_data.get('current_question', 0)
+    questions_for_questionnaire = context.bot_data[
+        'questions_for_questionnaire']
+    readable_questions = context.bot_data['readable_questions']
+
+    if question_index != 0:
+        previous_question = questions_for_questionnaire[question_index - 1]
+        if previous_question == 'email':
+            is_valid_email = check_email(update, context)
+            if not is_valid_email:
+                return 'HANDLE_QUESTIONNAIRE_FOR_SIGNUP'
+        context.user_data[previous_question] = update.message.text
+
+    if question_index < len(questions_for_questionnaire):
+        question = readable_questions[
+            questions_for_questionnaire[question_index]]
+        context.user_data['current_question'] = question_index + 1
+        if question_index == 0:
+            with open('meetup_bot/questionnaire_intro_signup.txt', 'r') as f:
+                intro = f.read()
+            question = f'{intro}\r\n\r\n{question}'
+        context.bot.send_message(
+            chat_id=update.effective_chat.id,
+            text=question,
+        )
+        return 'HANDLE_QUESTIONNAIRE_FOR_SIGNUP'
+
+    Questionnaire.objects.update_or_create(
+        client=user,
+        defaults={
+            'first_name': context.user_data['first_name'],
+            'email': context.user_data['email'],
+            'job_title': context.user_data['job_title'],
+            'company': context.user_data['company']
+        }
+    )
+
+    context.bot.send_message(
+        chat_id=update.effective_chat.id,
+        text='Загрузите ваше резюме в формате PDF',
+    )
+
+    return 'HANDLE_SIGNUP_SPEAKERS'
+
+
+def get_resume(update, context):
+    resume = context.bot.get_file(update.message.document).download()
+    questionnaire = Questionnaire.objects.filter(
+        client=context.user_data['user'])[0]
+    questionnaire.resume = resume
+    questionnaire.save()
+    context.bot.send_message(
+        chat_id=update.effective_chat.id,
+        text='Введите вашу тему',
+    )
+    return 'HANDLE_SIGNUP_SPEAKERS'
+
+
+def handle_signup_speakers(update, context: Context):
+    user = context.user_data['user']
+    questionnaire_bool = Questionnaire.objects.filter(
+        client=context.user_data['user']).exists()
+
+    if not questionnaire_bool:
+        return handle_questionnaire_for_signup(update, context)
+    questionnaire = Questionnaire.objects.filter(
+        client=context.user_data['user'])[0]
+    if not questionnaire.resume:
+        context.bot.send_message(
+            chat_id=update.effective_chat.id,
+            text='Загрузите ваше резюме в формате PDF',
+        )
+        return 'HANDLE_SIGNUP_SPEAKERS'
+    if update.message:
+        ProposedLecture.objects.create(user=user,
+                                       lecture_title=update.message.text,
+                                       questionnaire=questionnaire)
+        reply_markup = get_menu_keyboard(context.user_data['user'].is_speaker)
+        context.bot.send_message(
+            chat_id=update.effective_chat.id,
+            text='Ваша заявка отправлена',
+            reply_markup=reply_markup
+        )
+        return 'HANDLE_MENU'
+    context.bot.send_message(
+        chat_id=update.effective_chat.id,
+        text='Введите вашу тему',
+    )
+    return 'HANDLE_SIGNUP_SPEAKERS'
 
 
 def respond_to_questions(update: Update, context: CallbackContext):

@@ -271,11 +271,13 @@ class ProposedLecture(models.Model):
     lecture_title = models.TextField(
         verbose_name='Описание лекции',
         blank=True)
-    questionnaire = models.OneToOneField(
+    questionnaire = models.ForeignKey(
         Questionnaire,
         verbose_name='Анкета',
         on_delete=models.CASCADE,
-        primary_key=True
+        related_name='proposed_lectures',
+        blank=True,
+        null=True
     )
 
     class Meta:
@@ -284,3 +286,9 @@ class ProposedLecture(models.Model):
 
     def __str__(self):
         return f'Предложенная лекция от {self.questionnaire.first_name}'
+
+    def get_speaker_name(self):
+        return self.user.first_name
+
+    def get_speaker_title_job(self):
+        return self.user.job_title

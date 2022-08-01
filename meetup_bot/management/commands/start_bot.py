@@ -4,7 +4,8 @@ from django.core.management import BaseCommand
 from meetup_bot.models import Event, Questionnaire
 from meetup_bot.tg_bot import TgChatBot, handle_acquaintance, ask_speaker, \
     handle_menu, handle_questionnaire, start, respond_to_questions, \
-    handle_program_blocks, handle_program_lectures, handle_donation
+    handle_program_blocks, handle_program_lectures, handle_donation, \
+    handle_signup_speakers, handle_questionnaire_for_signup, get_resume
 
 
 class Command(BaseCommand):
@@ -16,7 +17,7 @@ class Command(BaseCommand):
 def start_bot():
     current_event = Event.objects.first()
     questions_for_questionnaire = [
-        field.name for field in Questionnaire._meta.get_fields()[1:]
+        field.name for field in Questionnaire._meta.get_fields()[2:-1]
     ]
     readable_questions = {
         'first_name': 'Как вас зовут?',
@@ -37,7 +38,10 @@ def start_bot():
             'HANDLE_PROGRAM_BLOCKS': handle_program_blocks,
             'HANDLE_PROGRAM_LECTURES': handle_program_lectures,
             'HANDLE_DONATION': handle_donation,
-            'HANDLE_ACQUAINTANCE': handle_acquaintance
+            'HANDLE_ACQUAINTANCE': handle_acquaintance,
+            'HANDLE_SIGNUP_SPEAKERS': handle_signup_speakers,
+            'HANDLE_QUESTIONNAIRE_FOR_SIGNUP': handle_questionnaire_for_signup,
+            'GET_RESUME': get_resume
         },
         questions_for_questionnaire,
         readable_questions
