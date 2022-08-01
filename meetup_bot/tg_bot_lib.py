@@ -6,21 +6,23 @@ from email_validate import validate
 
 from .models import Block, Lecture
 
-
 RETURN_BUTTON_TEXT = '📋 Назад в меню'
 GREETING_MSG = 'Здравствуйте! Это официальный бот по поддержке участников 🤖'
 
 
 def get_menu_keyboard(is_speaker):
     keyboard = [
-        [InlineKeyboardButton('📋  Программа мероприятия', callback_data='program')],
-        [InlineKeyboardButton('🗣  Задать вопрос спикеру', callback_data='ask_speaker')],
+        [InlineKeyboardButton('📋  Программа мероприятия',
+                              callback_data='program')],
+        [InlineKeyboardButton('🗣  Задать вопрос спикеру',
+                              callback_data='ask_speaker')],
         [InlineKeyboardButton('🤝  Познакомиться', callback_data='acquaint')],
         [InlineKeyboardButton('💸  Донат', callback_data='donate')],
     ]
     if is_speaker:
         keyboard.append(
-            [InlineKeyboardButton('Ответить на вопросы', callback_data='respond_to_questions')],
+            [InlineKeyboardButton('Ответить на вопросы',
+                                  callback_data='respond_to_questions')],
         )
     reply_markup = InlineKeyboardMarkup(keyboard)
     return reply_markup
@@ -29,8 +31,10 @@ def get_menu_keyboard(is_speaker):
 def get_acquaintance_keyboard():
     keyboard = [
         [InlineKeyboardButton('Да', callback_data='accept')],
-        [InlineKeyboardButton('Внести изменения в анкету', callback_data='update_questionnaire')],
-        [InlineKeyboardButton(RETURN_BUTTON_TEXT, callback_data='back_to_menu')],
+        [InlineKeyboardButton('Внести изменения в анкету',
+                              callback_data='update_questionnaire')],
+        [InlineKeyboardButton(RETURN_BUTTON_TEXT,
+                              callback_data='back_to_menu')],
     ]
     reply_markup = InlineKeyboardMarkup(keyboard)
     return reply_markup
@@ -50,34 +54,43 @@ def check_email(update, context):
         )
     return is_valid_email
 
+
 def get_blocks_keyboard():
     blocks = Block.objects.filter(end__gte=timezone.now())
     keyboard = [
-        [InlineKeyboardButton(block.title, callback_data=f'block {block.pk}')] for block in blocks
+        [InlineKeyboardButton(block.title, callback_data=f'block {block.pk}')]
+        for block in blocks
     ]
     keyboard.append(
-        [InlineKeyboardButton(RETURN_BUTTON_TEXT, callback_data='back_to_menu')]
+        [InlineKeyboardButton(RETURN_BUTTON_TEXT,
+                              callback_data='back_to_menu')]
     )
     reply_markup = InlineKeyboardMarkup(keyboard)
     return reply_markup
 
+
 def get_lectures_keyboard(block_pk):
-    lectures = Lecture.objects.filter(block__pk=block_pk).filter(end__gte=timezone.now())
+    lectures = Lecture.objects.filter(block__pk=block_pk).filter(
+        end__gte=timezone.now())
     keyboard = []
     for lecture in lectures:
         if lecture.title != 'Обед':
             keyboard.append(
-                [InlineKeyboardButton(lecture.title, callback_data=f'lecture {lecture.pk}')]
+                [InlineKeyboardButton(lecture.title,
+                                      callback_data=f'lecture {lecture.pk}')]
             )
     keyboard.append(
-        [InlineKeyboardButton(RETURN_BUTTON_TEXT, callback_data='back_to_menu')]
+        [InlineKeyboardButton(RETURN_BUTTON_TEXT,
+                              callback_data='back_to_menu')]
     )
     reply_markup = InlineKeyboardMarkup(keyboard)
     return reply_markup
 
+
 def back_to_menu_keyboard():
     keyboard = [
-        [InlineKeyboardButton(RETURN_BUTTON_TEXT, callback_data='back_to_menu')]
+        [InlineKeyboardButton(RETURN_BUTTON_TEXT,
+                              callback_data='back_to_menu')]
     ]
     reply_markup = InlineKeyboardMarkup(keyboard)
     return reply_markup
@@ -88,7 +101,8 @@ def get_questions_keyboard():
         [InlineKeyboardButton('Ответить в чат', callback_data='reply')],
         [InlineKeyboardButton('Следующий вопрос', callback_data='next')],
         [InlineKeyboardButton('Предыдущий вопрос', callback_data='previous')],
-        [InlineKeyboardButton(RETURN_BUTTON_TEXT, callback_data='back_to_menu')],
+        [InlineKeyboardButton(RETURN_BUTTON_TEXT,
+                              callback_data='back_to_menu')],
     ]
     reply_markup = InlineKeyboardMarkup(keyboard)
     return reply_markup
@@ -107,7 +121,8 @@ def get_speakers_keyboard(lecture_pk):
             )]
         )
     keyboard.append(
-        [InlineKeyboardButton(RETURN_BUTTON_TEXT, callback_data='back_to_menu')]
+        [InlineKeyboardButton(RETURN_BUTTON_TEXT,
+                              callback_data='back_to_menu')]
     )
     reply_markup = InlineKeyboardMarkup(keyboard)
     return reply_markup
@@ -125,11 +140,14 @@ def get_text_notification(user):
         text = ''
     return text
 
+
 def accept_acquaintance_keyboard(user_tg_id):
     keyboard = [
-        [InlineKeyboardButton('Подходит!', callback_data=f'get_contact {user_tg_id}')],
+        [InlineKeyboardButton('Подходит!',
+                              callback_data=f'get_contact {user_tg_id}')],
         [InlineKeyboardButton('Можно ещё посмотреть?', callback_data='next')],
-        [InlineKeyboardButton(RETURN_BUTTON_TEXT, callback_data='back_to_menu')]
+        [InlineKeyboardButton(RETURN_BUTTON_TEXT,
+                              callback_data='back_to_menu')]
     ]
     reply_markup = InlineKeyboardMarkup(keyboard)
     return reply_markup

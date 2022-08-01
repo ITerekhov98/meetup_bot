@@ -1,6 +1,8 @@
 from contextvars import Context
 
-from telegram import Update, InlineKeyboardMarkup, InlineKeyboardButton, LabeledPrice, error
+from django.conf import settings
+from telegram import Update, InlineKeyboardMarkup, InlineKeyboardButton, \
+    LabeledPrice, error
 from telegram.ext import (
     CallbackQueryHandler,
     CommandHandler,
@@ -9,8 +11,6 @@ from telegram.ext import (
     Filters,
     CallbackContext, PreCheckoutQueryHandler
 )
-
-from django.conf import settings
 
 from .models import Client, Questionnaire, Question, Block, Lecture, Donate
 from .tg_bot_lib import \
@@ -23,18 +23,25 @@ from .tg_bot_lib import \
 
 class TgChatBot(object):
 
-    def __init__(self, token, event, states_functions, questions_for_questionnaire, readable_questions):
+    def __init__(self, token, event, states_functions,
+                 questions_for_questionnaire, readable_questions):
         self.event = event
-        self.token = token 
+        self.token = token
         self.states_functions = states_functions
         self.questions_for_questionnaire = questions_for_questionnaire
         self.readable_questions = readable_questions
         self.updater = Updater(token=token, use_context=True)
-        self.updater.dispatcher.add_handler(CallbackQueryHandler(self.handle_users_reply))
-        self.updater.dispatcher.add_handler(CommandHandler('start', self.handle_users_reply))
-        self.updater.dispatcher.add_handler(MessageHandler(Filters.text, self.handle_users_reply))
-        self.updater.dispatcher.add_handler(PreCheckoutQueryHandler(precheckout_callback))
-        self.updater.dispatcher.add_handler(MessageHandler(Filters.successful_payment, successful_payment_callback))
+        self.updater.dispatcher.add_handler(
+            CallbackQueryHandler(self.handle_users_reply))
+        self.updater.dispatcher.add_handler(
+            CommandHandler('start', self.handle_users_reply))
+        self.updater.dispatcher.add_handler(
+            MessageHandler(Filters.text, self.handle_users_reply))
+        self.updater.dispatcher.add_handler(
+            PreCheckoutQueryHandler(precheckout_callback))
+        self.updater.dispatcher.add_handler(
+            MessageHandler(Filters.successful_payment,
+                           successful_payment_callback))
 
     def handle_users_reply(self, update: Update, context: CallbackContext):
         user, created = Client.objects.get_or_create(
@@ -55,7 +62,8 @@ class TgChatBot(object):
             user.current_state = 'START'
 
         context.user_data['user'] = user
-        context.bot_data['questions_for_questionnaire'] = self.questions_for_questionnaire
+        context.bot_data[
+            'questions_for_questionnaire'] = self.questions_for_questionnaire
         context.bot_data['readable_questions'] = self.readable_questions
         state_handler = self.states_functions[user.current_state]
         next_state = state_handler(update, context)
@@ -90,7 +98,8 @@ def handle_menu(update: Update, context: CallbackContext):
     elif query.data == 'ask_speaker':
         return ask_speaker(update, context)
     elif query.data == 'acquaint':
-        if Questionnaire.objects.filter(client=context.user_data['user']).exists():
+        if Questionnaire.objects.filter(
+                client=context.user_data['user']).exists():
             return handle_acquaintance(update, context)
         return handle_questionnaire(update, context)
     elif query.data == 'respond_to_questions':
@@ -114,7 +123,8 @@ def get_program_blocks(update: Update, context: CallbackContext):
                    f'{event.description}'
     keyboard = []
     for block in event_blocks:
-        keyboard.append([InlineKeyboardButton(block.title, callback_data=block.id)])
+        keyboard.append(
+            [InlineKeyboardButton(block.title, callback_data=block.id)])
 
     keyboard.append(
         [InlineKeyboardButton(RETURN_BUTTON_TEXT, callback_data='return')]
@@ -144,10 +154,13 @@ def handle_program_blocks(update: Update, context: CallbackContext):
     current_block = context.user_data['current_block']
     for lecture in current_block.lectures.all():
         button_text = f'{lecture.start.strftime("%H:%M")} {lecture.title}'
-        keyboard.append([InlineKeyboardButton(button_text, callback_data=lecture.id)])
+        keyboard.append(
+            [InlineKeyboardButton(button_text, callback_data=lecture.id)])
 
-    keyboard.append([InlineKeyboardButton('↩ Назад к блокам', callback_data='return_to_blocks')])
-    keyboard.append([InlineKeyboardButton(RETURN_BUTTON_TEXT, callback_data='return')])
+    keyboard.append([InlineKeyboardButton('↩ Назад к блокам',
+                                          callback_data='return_to_blocks')])
+    keyboard.append(
+        [InlineKeyboardButton(RETURN_BUTTON_TEXT, callback_data='return')])
 
     reply_markup = InlineKeyboardMarkup(keyboard)
 
@@ -195,7 +208,8 @@ def handle_program_lectures(update: Update, context: CallbackContext):
 
     reply_markup = InlineKeyboardMarkup(
         [
-            [InlineKeyboardButton('↩ Назад к списку', callback_data='return_to_lectures')],
+            [InlineKeyboardButton('↩ Назад к списку',
+                                  callback_data='return_to_lectures')],
             [InlineKeyboardButton(RETURN_BUTTON_TEXT, callback_data='return')],
         ]
     )
@@ -251,7 +265,8 @@ def handle_donation(update: Update, context: CallbackContext):
     delete_update_msg(update, context)
     try:
         context.bot.send_invoice(chat_id, title, description, payload,
-                                 provider_token, start_parameter, currency, prices)
+                                 provider_token, start_parameter, currency,
+                                 prices)
     except error.BadRequest:
         context.bot.send_message(
             chat_id=update.effective_chat.id,
@@ -278,7 +293,8 @@ def precheckout_callback(update, context):
 
 
 def successful_payment_callback(update, context):
-    reply_markup = InlineKeyboardMarkup([[InlineKeyboardButton(RETURN_BUTTON_TEXT, callback_data='return')]])
+    reply_markup = InlineKeyboardMarkup(
+        [[InlineKeyboardButton(RETURN_BUTTON_TEXT, callback_data='return')]])
 
     donated_sum = update.message.successful_payment.total_amount / 100
 
@@ -314,7 +330,7 @@ def ask_speaker(update: Update, context: CallbackContext):
             text=text,
         )
         return start(update, context)
-    
+
     query = update.callback_query
     query.answer()
     if query.data == 'back_to_menu':
@@ -347,13 +363,14 @@ def ask_speaker(update: Update, context: CallbackContext):
 
 
 def handle_questionnaire(update: Update, context: CallbackContext):
-    user = context.user_data['user']   
+    user = context.user_data['user']
     question_index = context.user_data.get('current_question', 0)
-    questions_for_questionnaire = context.bot_data['questions_for_questionnaire']
+    questions_for_questionnaire = context.bot_data[
+        'questions_for_questionnaire']
     readable_questions = context.bot_data['readable_questions']
 
     if question_index != 0:
-        previous_question = questions_for_questionnaire[question_index-1]
+        previous_question = questions_for_questionnaire[question_index - 1]
         if previous_question == 'email':
             is_valid_email = check_email(update, context)
             if not is_valid_email:
@@ -361,7 +378,8 @@ def handle_questionnaire(update: Update, context: CallbackContext):
         context.user_data[previous_question] = update.message.text
 
     if question_index < len(questions_for_questionnaire):
-        question = readable_questions[questions_for_questionnaire[question_index]]
+        question = readable_questions[
+            questions_for_questionnaire[question_index]]
         context.user_data['current_question'] = question_index + 1
         if question_index == 0:
             with open('meetup_bot/questionnaire_intro.txt', 'r') as f:
@@ -373,10 +391,9 @@ def handle_questionnaire(update: Update, context: CallbackContext):
         )
         return 'HANDLE_QUESTIONNAIRE'
 
-
     Questionnaire.objects.update_or_create(
         client=user,
-        defaults= {
+        defaults={
             'first_name': context.user_data['first_name'],
             'email': context.user_data['email'],
             'job_title': context.user_data['job_title'],
@@ -404,7 +421,7 @@ def handle_acquaintance(update, context: Context):
             text=text,
             reply_markup=reply_markup
         )
-        return 'HANDLE_ACQUAINTANCE' 
+        return 'HANDLE_ACQUAINTANCE'
 
     if query.data == 'back_to_menu':
         return start(update, context)
@@ -415,7 +432,7 @@ def handle_acquaintance(update, context: Context):
     elif 'get_contact' in query.data:
         tg_id = query.data.split()[-1]
         text = f'[Приятного общения\!](tg://user?id={tg_id})'
-        reply_markup=back_to_menu_keyboard()
+        reply_markup = back_to_menu_keyboard()
         context.bot.send_message(
             chat_id=update.effective_chat.id,
             text=text,
@@ -436,8 +453,8 @@ def handle_acquaintance(update, context: Context):
             text='Ого, видимо вы первый зарегестрировались! Попробуйте чуть позже',
             reply_markup=back_to_menu_keyboard()
         )
-        return 'HANDLE_ACQUAINTANCE' 
-        
+        return 'HANDLE_ACQUAINTANCE'
+
     text = 'Анкета участника {}\r\nДолжность {}\r\nКомпания {}'.format(
         questionnaire.first_name,
         questionnaire.job_title,
@@ -453,14 +470,14 @@ def handle_acquaintance(update, context: Context):
         chat_id=update.effective_chat.id,
         message_id=query.message.message_id
     )
-    return 'HANDLE_ACQUAINTANCE'  
+    return 'HANDLE_ACQUAINTANCE'
 
 
 def respond_to_questions(update: Update, context: CallbackContext):
     respond_index = context.user_data.get('current_respond', 0)
     user = context.user_data['user']
 
-    if update.callback_query: 
+    if update.callback_query:
         query = update.callback_query
         query.answer()
         if query.data == 'back_to_menu':
@@ -472,7 +489,7 @@ def respond_to_questions(update: Update, context: CallbackContext):
                 text='Введите ваш ответ',
             )
             return 'HANDLE_RESPOND'
-        
+
         if query.data == 'next':
             respond_index += 1
         if query.data == 'previous':
@@ -501,10 +518,11 @@ def respond_to_questions(update: Update, context: CallbackContext):
         context.user_data['questions'] = questions
     else:
         questions = context.user_data['questions']
-    
+
     questions_count = questions.count()
     if respond_index >= questions_count:
-        check_for_new_questions = user.incoming_questions.all().select_related('from_user')
+        check_for_new_questions = user.incoming_questions.all().select_related(
+            'from_user')
         if check_for_new_questions.count() == questions_count:
             context.bot.send_message(
                 chat_id=update.effective_chat.id,
@@ -520,5 +538,5 @@ def respond_to_questions(update: Update, context: CallbackContext):
         text=questions[respond_index].question,
         reply_markup=get_questions_keyboard()
     )
-    context.user_data['current_respond'] = respond_index    
+    context.user_data['current_respond'] = respond_index
     return 'HANDLE_RESPOND'

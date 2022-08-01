@@ -1,10 +1,10 @@
 from django.conf import settings
 from django.core.management import BaseCommand
 
+from meetup_bot.models import Event, Questionnaire
 from meetup_bot.tg_bot import TgChatBot, handle_acquaintance, ask_speaker, \
     handle_menu, handle_questionnaire, start, respond_to_questions, \
     handle_program_blocks, handle_program_lectures, handle_donation
-from meetup_bot.models import Event, Questionnaire
 
 
 class Command(BaseCommand):

@@ -216,7 +216,8 @@ class Lecture(models.Model):
         return f'{"Лекция" if not self.is_timeout else ""} {self.title}'
 
     def get_speakers(self):
-        return ", ".join([speaker.first_name for speaker in self.speakers.all()])
+        return ", ".join(
+            [speaker.first_name for speaker in self.speakers.all()])
 
 
 class Donate(models.Model):
