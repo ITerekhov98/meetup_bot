@@ -149,6 +149,13 @@ class Questionnaire(models.Model):
     def __str__(self):
         return f'Анкета клиента с tg_id={self.client.tg_id}'
 
+    def save(self, *args, **kwargs):
+        user = self.client
+        if not user.job_title:
+            user.job_title = self.job_title
+            user.save()
+        return super(Questionnaire, self).save(*args, **kwargs)
+
 
 class Question(models.Model):
     """Вопрос спикеру"""
