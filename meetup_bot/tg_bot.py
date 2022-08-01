@@ -1,3 +1,5 @@
+import os
+
 import shutil
 from contextvars import Context
 
@@ -528,12 +530,11 @@ def handle_questionnaire_for_signup(update: Update, context: CallbackContext):
 
 def get_resume(update, context):
     resume = context.bot.get_file(update.message.document).download(
-        custom_path=update.message.document.file_name)
+        custom_path=f'{settings.MEDIA_ROOT}{update.message.document.file_name}')
     questionnaire = Questionnaire.objects.filter(
         client=context.user_data['user'])[0]
-    questionnaire.resume = resume
+    questionnaire.resume = os.path.basename(resume)
     questionnaire.save()
-    shutil.move(update.message.document.file_name, "media/")
     context.bot.send_message(
         chat_id=update.effective_chat.id,
         text='Введите вашу тему',
