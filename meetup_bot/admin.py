@@ -1,3 +1,5 @@
+import logging
+
 import requests
 from django.conf import settings
 from django.contrib import admin
@@ -6,6 +8,8 @@ from requests.exceptions import HTTPError, ConnectionError
 
 from .models import Event, Client, Lecture, Donate, Block, Notification, \
     Questionnaire, ProposedLecture
+
+logger = logging.getLogger(__name__)
 
 
 class LectureInline(admin.TabularInline):
@@ -111,11 +115,13 @@ class NotificationAdmin(admin.ModelAdmin):
                     response = requests.get(url)
                     response.raise_for_status()
                 except HTTPError:
-                    # TODO логируем ошибку
-                    pass
+                    logger.info(
+                        f"HTTPError. Ошибка при отправке сообщения. \
+                        User chat_id: {chat_id}")
                 except ConnectionError:
-                    # TODO логируем ошибку
-                    pass
-            self.message_user(request, "Уведомление отправлено")
+                    logger.info(
+                        f"ConnectionError. Ошибка при отправке сообщения. \
+                        User chat_id: {chat_id}")
+            self.message_user(request, "Уведомление отправлено ")
             return HttpResponseRedirect(".")
         return super().response_change(request, obj)
