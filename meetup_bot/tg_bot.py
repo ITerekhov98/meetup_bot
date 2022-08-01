@@ -1,4 +1,3 @@
-import shutil
 from contextvars import Context
 
 from django.conf import settings
@@ -533,7 +532,6 @@ def get_resume(update, context):
         client=context.user_data['user'])[0]
     questionnaire.resume = resume
     questionnaire.save()
-    shutil.move(update.message.document.file_name, "media/")
     context.bot.send_message(
         chat_id=update.effective_chat.id,
         text='Введите вашу тему',
